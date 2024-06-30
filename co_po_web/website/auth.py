@@ -9,8 +9,7 @@ from PIL import Image
 import base64
 from website import db
 
-auth = Blueprint('auth',__name__)
-
+auth = Blueprint('auth', __name__)
 
 def authenticate_user(email, password):
     admin_user = Admin.query.filter_by(email=email).first()
@@ -19,22 +18,21 @@ def authenticate_user(email, password):
     else:
         user = User.query.filter_by(email=email).first()
         if user and user.check_password(password):
-            return user, 'user'  
+            return user, 'user'
     return None, None
 
- 
 @auth.route('/login', methods=['POST', 'GET'])
 def login():
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
-        
+
         user, user_type = authenticate_user(email, password)
-        
+
         if user:
             login_user(user)
             session['user_type'] = user_type
-            
+
             if user_type == 'admin':
                 return redirect(url_for('admin_routes.admin_dashboard'))
             else:
@@ -45,7 +43,7 @@ def login():
     else:
         # GET request, render the login page
         return render_template('login.html')
-    
+
 @auth.route('/back-to-dashboard')
 @login_required
 def back_to_dashboard():
@@ -56,8 +54,7 @@ def back_to_dashboard():
             return redirect(url_for('user_routes.user_dashboard'))
     else:
         return redirect(url_for('auth.login'))
-      
-    
+
 @auth.route('/logout')
 @login_required
 def logout():
@@ -105,13 +102,13 @@ def register():
 
     # Create a new User instance
     new_user = User(
-        name=name, 
-        mobile_no=mobile_no, 
-        email=email, 
-        college=college, 
+        name=name,
+        mobile_no=mobile_no,
+        email=email,
+        college=college,
         profile_photo=resized_image_data,  # Save the resized image data
         password=hashed_password,
-        is_approved=False # Set is_approved to True
+        is_approved=False  # Set is_approved to True
     )
 
     # Commit the new user to the database
@@ -120,6 +117,3 @@ def register():
 
     flash('Registration request submitted for approval!', 'success')
     return redirect(url_for('auth.login'))
-
-
-

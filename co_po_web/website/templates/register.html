@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Register</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins&display=swap">
+  <link rel="stylesheet" href="../static/css/register.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
+
+  <style>
+    body {
+      background-color: #f5f5f5;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .register-form {
+      max-width: 400px;
+      margin: 0 auto;
+      background-color: #fff;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+      margin-top: 50px;
+    }
+
+    .register-form .text {
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .register-form .form {
+      margin-top: 20px;
+    }
+
+    .register-form .field {
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    .register-form .field input {
+      width: calc(100% - 40px);
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      outline: none;
+      margin-left: 40px;
+      font-size: 16px;
+    }
+
+    .register-form .field .fas {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      left: 10px;
+      color: #666;
+    }
+
+    .register-form .profile-photo-input input[type="file"] {
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      left: 0;
+      top: 0;
+      cursor: pointer;
+    }
+
+    .register-form .profile-photo-input label {
+      display: block;
+      width: calc(100% - 40px);
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-left: 40px;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .register-form button {
+      width: 100%;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-size: 16px;
+    }
+
+    .register-form button:hover {
+      background-color: #0056b3;
+    }
+
+    .register-form .link {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .register-form .link a {
+      color: #007bff;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .register-form .link a:hover {
+      text-decoration: underline;
+    }
+
+    .error-message {
+      color: red;
+      font-size: 12px;
+      margin-top: 5px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="register-form">
+      <div class="text">REGISTER</div>
+      <form action="/register" method="POST" class="form" id="registerForm" enctype="multipart/form-data">
+          <!-- Flash messages -->
+          <div id="flash-messages">
+              {% with messages = get_flashed_messages() %}
+                  {% if messages %}
+                      {% for message in messages %}
+                          <div class="flash-message">{{ message }}</div>
+                      {% endfor %}
+                  {% endif %}
+              {% endwith %}
+          </div>
+          <!-- Input fields for registration -->
+          <div class="field">
+              <div class="fas fa-user"></div>
+              <input type="text" placeholder="Name" name="name" required>
+          </div>
+          <div class="field">
+              <div class="fas fa-mobile-alt"></div>
+              <input type="text" placeholder="Mobile No" name="mobile_no" required>
+          </div>
+          <div class="field">
+              <div class="fas fa-envelope"></div>
+              <input type="email" placeholder="Email" name="email" required>
+          </div>
+          <div class="field">
+              <div class="fas fa-university"></div>
+              <input type="text" placeholder="College" name="college" required>
+          </div>
+          <div class="field profile-photo-input">
+              <label for="profilePhoto">
+                  <i class="fas fa-camera"></i> Choose Photo
+              </label>
+              <input type="file" id="profilePhoto" name="profile_photo">
+          </div>
+          <div class="field">
+              <div class="fas fa-lock"></div>
+              <input type="password" id="password" placeholder="Password" name="password" required>
+          </div>
+          <div class="field">
+              <div class="fas fa-lock"></div>
+              <input type="password" id="confirmPassword" placeholder="Confirm Password" name="confirm_password" required>
+              <div id="passwordMismatchError" class="error-message"></div>
+          </div>
+          <!-- Register button -->
+          <button type="submit">REGISTER</button>
+          <!-- Login link -->
+          <div class="link">
+              Already a User? <a href="/login">Login</a>
+          </div>
+      </form>
+  </div>
+  
+  <!-- JavaScript libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- JavaScript for password mismatch validation -->
+  <script>
+    $(document).ready(function() {
+      $('#registerForm').submit(function() {
+        var password = $('#password').val();
+        var confirmPassword = $('#confirmPassword').val();
+  
+        if (password != confirmPassword) {
+          $('#passwordMismatchError').text('Passwords do not match');
+          return false;
+        } else {
+          $('#passwordMismatchError').text('');
+          return true;
+        }
+      });
+    });
+  </script>
+  </body>
+</html>

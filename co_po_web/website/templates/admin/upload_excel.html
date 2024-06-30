@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Excel</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            padding-top: 50px;
+            background-color: #f0f2f5;
+            font-family: 'Arial', sans-serif;
+        }
+        .container {
+            max-width: 700px;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #333;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: bold;
+            color: #555;
+        }
+        .form-control {
+            border-radius: 5px;
+        }
+        .btn-primary {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+        .example-format {
+            margin-top: 40px;
+        }
+        .example-format h3, .example-format h5 {
+            text-align: center;
+            color: #333;
+        }
+        .table-responsive {
+            margin-top: 20px;
+        }
+        .example-format table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .example-format th, .example-format td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        .example-format th {
+            background-color: #f8f9fa;
+            color: #333;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Upload Excel</h1>
+        <form action="{{ url_for('admin_routes.upload_excel') }}" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="college">Select College:</label>
+                <select id="college" name="college" class="form-control" required>
+                    {% for college in colleges %}
+                        <option value="{{ college.id }}">{{ college.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="subject_list">Subject List Excel:</label>
+                <input type="file" id="subject_list" name="subject_list" class="form-control" accept=".xlsx, .xls" required>
+            </div>
+
+            <div class="form-group">
+                <label for="staff_list">Staff List Excel:</label>
+                <input type="file" id="staff_list" name="staff_list" class="form-control" accept=".xlsx, .xls" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Upload</button>
+        </form>
+
+        <div class="example-format">
+            <h3>Example Format for Excel Files</h3>
+            <div class="table-responsive">
+                <h5>Subject List Format</h5>
+                <table class="table table-bordered example-table">
+                    <thead>
+                        <tr>
+                            <th>subject_name</th>
+                            <th>subject_code</th>
+                            <th>syllabus</th>
+                            <th>branch</th>
+                            <th>semester</th>
+                            <th>year</th>
+                            <th>regulation</th>
+                            <th>integrated</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Mathematics</td>
+                            <td>MATH101</td>
+                            <td>syllabus details</td>
+                            <td>Science</td>
+                            <td>First</td>
+                            <td>2024</td>
+                            <td>2020</td>
+                            <td>yes</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="table-responsive">
+                <h5>Staff List Format</h5>
+                <table class="table table-bordered example-table">
+                    <thead>
+                        <tr>
+                            <th>Staff Name</th>
+                            <th>Email</th>
+                            <th>Password</th>
+                            <th>Handling Section</th>
+                            <th>Handling Subject Code</th>
+                            <th>Role</th>
+                            <th>Branch</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>John Doe</td>
+                            <td>johndoe@example.com</td>
+                            <td>password1</td>
+                            <td>A</td>
+                            <td>MATH101</td>
+                            <td>Professor</td>
+                            <td>Science</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

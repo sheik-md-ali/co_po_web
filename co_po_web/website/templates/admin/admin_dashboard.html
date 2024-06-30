@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Admin Dashboard</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
+    <style>
+        /* General styles */
+        body {
+            line-height: 1.5;
+            min-height: 100vh;
+            font-family: "Be Vietnam Pro", sans-serif;
+            background-color: #f0f2f5; /* Light gray background */
+            color: #333; /* Dark text color */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+        }
+
+        /* App container */
+        .app {
+            width: 100%;
+            max-width: 1200px;
+            background-color: #fff; /* White background */
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Header */
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            background-color: #343a40; /* Dark background color */
+            border-radius: 10px; /* Rounded corners */
+            padding: 1rem; /* Added padding */
+            color: #fff; /* White text color */
+        }
+
+        /* Logo */
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-icon img {
+            width: 50px; /* Adjust the size of the logo icon */
+            height: auto; /* Maintain aspect ratio */
+            margin-right: 1rem; /* Spacing between logo icon and title */
+        }
+
+        .logo-title {
+            font-size: 1.5rem; /* Increase font size of the title */
+        }
+
+        .app-header-actions {
+        display: flex;
+        align-items: center;
+        }
+        @media (max-width: 1200px) {
+        .app-header-actions {
+            display: none;
+        }
+        }
+
+        img {
+        display: block;
+        max-width: 100%;
+        }
+
+        .app-header-actions-buttons {
+        display: flex;
+        border-left: 1px solid var(--c-gray-600);
+        margin-left: 2rem;
+        padding-left: 2rem;
+        }
+        .app-header-actions-buttons > * + * {
+        margin-left: 1rem;
+        }
+
+        .app-header-mobile {
+        display: none;
+        }
+        @media (max-width: 1200px) {
+        .app-header-mobile {
+            display: flex;
+        }
+        }
+        .user-profile {
+        display: flex;
+        align-items: center;
+        border: 0;
+        background: transparent;
+        cursor: pointer;
+        color: var(--c-text-tertiary);
+        transition: 0.25s ease;
+        }
+        .user-profile:hover, .user-profile:focus {
+        color: var(--c-text-primary);
+        }
+        .user-profile:hover span:last-child, .user-profile:focus span:last-child {
+        box-shadow: 0 0 0 4px var(--c-gray-800), 0 0 0 5px var(--c-text-tertiary);
+        }
+        .user-profile span:first-child {
+        display: flex;
+        font-size: 1.125rem;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--c-gray-600);
+        font-weight: 300;
+        }
+        .user-profile span:last-child {
+        transition: 0.25s ease;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 52px;
+        height: 55px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin-left: 1.5rem;
+        flex-shrink: 0;
+        }
+
+        .icon-button {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background-color: transparent;
+        border: 1px solid var(--c-gray-500);
+        color: var(--c-text-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: 0.25s ease;
+        flex-shrink: 0;
+        }
+        .icon-button.large {
+        width: 42px;
+        height: 42px;
+        font-size: 1.25em;
+        }
+        .icon-button i {
+        transition: 0.25s ease;
+        }
+        .icon-button:hover, .icon-button:focus {
+        background-color: var(--c-gray-600);
+        box-shadow: 0 0 0 4px var(--c-gray-800), 0 0 0 5px var(--c-text-tertiary);
+        }
+
+
+        /* Logout button */
+        .logout-button {
+            background-color: #dc3545; /* Red button background */
+            color: #fff; /* White text color */
+            border: none;
+            padding: 0.5rem 1rem; /* Keep the same padding */
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-button:hover {
+            background-color: #c82333; /* Darker red hover color */
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 2rem;
+            background-color: #343a40; /* Dark footer background */
+            color: #fff; /* White text color */
+            padding: 1rem; /* Added padding for spacing */
+            border-radius: 10px;
+        }
+
+        /* Tiles */
+        .tiles {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between; /* Ensure even distribution of tiles */
+            margin-top: 1.25rem;
+        }
+
+        .tile {
+            width: calc(32% - 2rem); /* Adjust width for three tiles per row with a little extra space */
+            margin-bottom: 1rem; /* Adjust margin to create space between rows */
+            padding: 1rem;
+            border-radius: 8px;
+            color: var(--c-gray-900);
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            transition: 0.25s ease;
+        }
+
+        .tile:nth-child(6n - 5) {
+            background-color: #28a745; /* Green tile background */
+        }
+
+        .tile:nth-child(6n - 4) {
+            background-color: #ffc107; /* Yellow tile background */
+        }
+
+        .tile:nth-child(6n - 3) {
+            background-color: #007bff; /* Blue tile background */
+        }
+
+        .tile:nth-child(6n - 2) {
+            background-color: #dc3545; /* Red tile background */
+        }
+
+        .tile:nth-child(6n - 1) {
+            background-color: #6c757d; /* Gray tile background */
+        }
+
+        .tile:nth-child(6n) {
+            background-color: #17a2b8; /* Cyan tile background */
+        }
+
+        .tile:hover {
+            transform: translateY(-5px);
+        }
+
+        .tile:focus-within {
+            box-shadow: 0 0 0 2px var(--c-gray-800), 0 0 0 4px var(--c-olive-500);
+        }
+
+        .tile-header i {
+            font-size: 2rem;
+            margin-right: 1rem;
+        }
+
+        .tile-header h3 {
+            font-size: 1.25rem;
+        }
+
+        .tile a {
+            text-decoration: none;
+            color: inherit;
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <header class="app-header">
+        <div class="app-header-logo">
+            <div class="logo">
+                <span class="logo-icon">
+                    <!-- Use url_for to generate the image URL -->
+                    <img src="{{ url_for('static', filename='images/admin.jpg') }}" alt="Logo">
+                </span>
+                <h1 class="logo-title">
+                    <span>College</span>
+                    <span>Outcome Management</span>
+                </h1>
+            </div>
+        </div>
+        <div class="app-header-actions">
+            <button class="user-profile" onclick="window.location.href='/profile'">
+                <!-- Display the user's name dynamically -->
+                <span>Sheik md ali</span>
+                <span>
+                    <!-- Use url_for to generate the image URL -->
+                    <img src="{{ url_for('static', filename='images/sheik_pic.jpeg') }}" alt="Admin">
+                </span>          
+            </button>
+            <div class="app-header-actions-buttons">
+                <button class="logout-button" onclick="logout()">
+                    Logout
+                </button>                
+            </div>
+        </div>
+    </header>       
+    <div class="app-body-main-content">
+        <section class="statistics-section">
+            <h2>Statistics</h2>
+            <div class="tiles">
+                <article class="tile">
+                    <a href="{{ url_for('admin_routes.user_list') }}">
+                        <div class="tile-header">
+                            <i class="ph-users"></i>
+                            <h3>
+                                <span>No of Users</span>
+                            </h3>
+                        </div>
+                        
+                    </a>
+                </article>
+                <article class="tile">
+                    <a href="{{ url_for('admin_routes.add_user') }}">
+                        <div class="tile-header">
+                            <i class="ph-user-plus"></i>
+                            <h3>
+                                <span>Add User</span>
+                            </h3>
+                        </div>
+                    </a>
+                </article>
+                <article class="tile">
+                    <a href="{{ url_for('admin_routes.registration_requests') }}">
+                        <div class="tile-header">
+                            <i class="ph-gear"></i>
+                            <h3>
+                                <span>Users Requests</span>
+                            </h3>
+                        </div>
+                    </a>
+                </article>
+                <article class="tile">
+                    <a href="{{ url_for('admin_routes.add_college') }}">
+                        <div class="tile-header">
+                            <i class="ph-book"></i>
+                            <h3>
+                                <span>add college</span>
+                            </h3>
+                        </div>
+                    </a>
+                </article>
+                <article class="tile">
+                    <a href="{{ url_for('admin_routes.upload_excel') }}">
+                        <div class="tile-header">
+                            <i class="ph-check-circle"></i>
+                            <h3>
+                                <span>upload excels</span>
+                            </h3>
+                        </div>
+                    </a>
+                </article>
+                <article class="tile">
+                    <a href="{{ url_for('admin_routes.assessment_management') }}">
+                        <div class="tile-header">
+                            <i class="ph-chat-circle"></i>
+                            <h3>
+                                <span>assessment modifcation</span>
+                            </h3>
+                        </div>
+                    </a>
+                </article>
+            </div>
+        </section>
+    </div>
+    <footer class="footer">
+        <h1>College Outcome Management<small></small></h1>
+        <div>
+            Empowering Students<br />
+            Improving Outcomes
+        </div>
+    </footer>
+</div>
+<script src="https://unpkg.com/phosphor-icons"></script>
+<script>
+    function logout() {
+        window.location.href = '/logout';
+    }
+</script>
+
+</body>
+</html>

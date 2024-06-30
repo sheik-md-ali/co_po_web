@@ -14,7 +14,7 @@ def create_app():
     # Initialize Flask app
     app = Flask(__name__)
     app.secret_key = os.getenv('SECRET_KEY', 'qwertyuiopzxcvbnmlkjhgfdsa')
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI', 'mysql://root:Suresh$$$@localhost/co_po')
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI', 'mysql://root:6381!Root$$@localhost/co_po')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # Import Blueprints

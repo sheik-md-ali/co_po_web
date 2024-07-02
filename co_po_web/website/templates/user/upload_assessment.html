@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assessment Page</title>
+    <title>Upload Assessment</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -11,28 +11,23 @@
             margin: 0;
             padding: 0;
         }
-        .container { 
-            display: flex; 
+        .container {
+            display: flex;
             justify-content: center;
             align-items: flex-start;
-            min-height: 100vh; /* Ensure the container covers the entire viewport height */
+            min-height: 100vh;
             padding: 20px;
         }
-        .section {
-            width: 50%; 
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        .left, .right {
+        
+        
+        .right {
             background-color: #fff;
             border-radius: 10px;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
             padding: 20px;
-            margin-right: 10px;
             margin-left: 10px;
         }
-
-        select, input[type="text"], input[type="file"], button {
+        select, input[type="file"], button {
             width: 100%;
             padding: 12px;
             margin-top: 5px;
@@ -57,8 +52,8 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             padding: 20px;
-            margin-bottom: 30px; 
-            margin-top: 20px; 
+            margin-bottom: 30px;
+            margin-top: 20px;
         }
         .template-download p {
             margin: 0;
@@ -76,35 +71,6 @@
         }
         .template-download a:hover {
             background-color: #0056b3;
-        }
-        .add-question-btn button {
-            background-color: #82dd5e;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 15px;
-            cursor: pointer;
-        }
-        .add-question-btn button:hover {
-            background-color: #0056b3;
-        }
-        .questions-container {
-            display: flex;
-            flex-wrap: wrap;
-        }
-        .question {
-            margin-right: 10px;
-            margin-bottom: 2px;
-            display: flex;
-            align-items: center;
-        }
-        .question input[type="text"],
-        .question select {
-            padding: 8px;
-            margin-right: 5px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
         }
         .back-button {
             display: inline-block;
@@ -125,22 +91,10 @@
     <a href="{{ url_for('auth.back_to_dashboard') }}" class="back-button">Back to Dashboard</a>
 
     <div class="container">
-        <!-- Left Section -->
-        <div class="section left">
-            <h2>Question based Mapping</h2>
-                <h3>Map the questions with the respective co's and define the marks.</h3>
-            <div class="add-question-btn">
-                <button id="addQuestionBtn">+ Add Question</button>
-            </div>
-            <div class="questions-container">
-                <!-- Questions will be dynamically added here -->
-            </div>
-        </div>
-
         <!-- Right Section -->
         <div class="section right">
             <div class="form-container">
-                <h2>Assessment Uplaod</h2>
+                <h2>Assessment Upload</h2>
                 <h3>Upload the respective excel file according to the assessment selected</h3>
                 
                 <form action="/upload" method="post" enctype="multipart/form-data">
@@ -148,7 +102,7 @@
                     <select id="subjectCode" name="subjectCode" required>
                         <option value="">Select Subject Code</option>
                         {% for subject in subjects %}
-                            <option value="{{ subject.id }}">{{ subject.course_code }}</option>
+                            <option value="{{ subject.id }}">{{ subject.subject_code }}</option>
                         {% endfor %}
                     </select>
                     
@@ -156,7 +110,6 @@
                     <select id="assessment" name="assessment" required>
                         <option value="">Select assessment</option>
                     </select>
-                    
                     
                     <label for="unitTestFile">Unit Test (Excel File):</label>
                     <input type="file" id="unitTestFile" name="unitTestFile" accept=".xls,.xlsx" required>
@@ -173,110 +126,29 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            const addQuestionBtn = document.getElementById("addQuestionBtn");
-            const questionsContainer = document.querySelector(".questions-container");
-            let questionCounter = 0;
-    
-            // Function to add a question
-            function addQuestion(maxMarks) {
-                questionCounter++;
-    
-                const questionWrapper = document.createElement("div");
-                questionWrapper.classList.add("question");
-    
-                const questionNumberInput = document.createElement("input");
-                questionNumberInput.type = "text";
-                questionNumberInput.readOnly = true;
-                questionNumberInput.value = `Question ${questionCounter}`;
-                questionNumberInput.classList.add("question-number");
-    
-                const maxMarksInput = document.createElement("input");
-                maxMarksInput.type = "text";
-                maxMarksInput.placeholder = "Max Marks";
-                maxMarksInput.name = `question${questionCounter}_maxMarks`;
-                maxMarksInput.value = maxMarks || "";
-    
-                const coDropdown = document.createElement("select");
-                coDropdown.name = `question${questionCounter}_co`;
-    
-                // Add CO options
-                for (let i = 1; i <= 6; i++) {
-                    const coOption = document.createElement("option");
-                    coOption.value = `CO${i}`;
-                    coOption.textContent = `CO${i}`;
-                    coDropdown.appendChild(coOption);
-                }
-    
-                const removeBtn = document.createElement("button");
-                removeBtn.textContent = "Remove";
-                removeBtn.classList.add("remove-question-btn");
-                removeBtn.addEventListener("click", function() {
-                    questionsContainer.removeChild(questionWrapper);
-                    questionCounter--;
-                    updateQuestionNumbers();
-                });
-    
-                questionWrapper.appendChild(questionNumberInput);
-                questionWrapper.appendChild(maxMarksInput);
-                questionWrapper.appendChild(coDropdown);
-                questionWrapper.appendChild(removeBtn);
-    
-                questionsContainer.appendChild(questionWrapper);
-            }
-    
-            // Function to update question numbers
-            function updateQuestionNumbers() {
-                const questionNumbers = document.querySelectorAll(".question-number");
-                questionNumbers.forEach((number, index) => {
-                    number.value = `Question ${index + 1}`;
-                });
-            }
-    
-            // Add 10 default questions with max 10 marks each
-            for (let i = 0; i < 10; i++) {
-                addQuestion(10);
-            }
-    
-            // Event listener for adding a question
-            addQuestionBtn.addEventListener("click", function() {
-                addQuestion(10); // Default to 10 marks for new questions
-            });
-    
-            // Update CO values when unit is selected
-            const unitDropdown = document.getElementById("unit");
-            unitDropdown.addEventListener("change", function() {
-                const unitValue = unitDropdown.value;
-                // You can perform any additional actions here if needed
-            });
-        });
+            const subjectCodeSelect = document.getElementById("subjectCode");
+            const assessmentSelect = document.getElementById("assessment");
 
-        document.addEventListener("DOMContentLoaded", function() {
-        const subjectCodeSelect = document.getElementById("subjectCode");
-        const assessmentSelect = document.getElementById("assessment");
-
-        subjectCodeSelect.addEventListener("change", function() {
-            const subjectId = subjectCodeSelect.value;
-            fetch(`/user/get_assessment_instances?subjectId=${subjectId}`)
-                .then(response => response.json())
-                .then(data => {
-                    // Clear existing options
-                    assessmentSelect.innerHTML = '<option value="">Select assessment</option>';
-                    // Populate assessment options
-                    data.forEach(instance => {
-                        const option = document.createElement("option");
-                        option.value = instance.id;
-                        option.textContent = instance.name;
-                        assessmentSelect.appendChild(option);
+            subjectCodeSelect.addEventListener("change", function() {
+                const subjectId = subjectCodeSelect.value;
+                fetch(`/user/get_assessment_instances?subjectId=${subjectId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Clear existing options
+                        assessmentSelect.innerHTML = '<option value="">Select assessment</option>';
+                        // Populate assessment options
+                        data.forEach(instance => {
+                            const option = document.createElement("option");
+                            option.value = instance.id;
+                            option.textContent = instance.name;
+                            assessmentSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching assessment instances:', error);
                     });
-                })
-                .catch(error => {
-                    console.error('Error fetching assessment instances:', error);
-                });
+            });
         });
-    });
-
     </script>
-    
-    
 </body>
 </html>

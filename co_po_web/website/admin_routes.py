@@ -3,7 +3,7 @@ from flask_login import login_required
 from werkzeug.security import generate_password_hash
 import sys
 sys.path.append('D:/co_po_web')
-from website.models import User, Assessment, College, CollegeStaff, SubjectList, Subject, AssessmentInstance
+from website.models import User, Assessment,IAComponent, Section, College, CollegeStaff, SubjectList, Subject, AssessmentInstance
 from io import BytesIO
 from PIL import Image
 import base64
@@ -24,66 +24,6 @@ def admin_dashboard():
         flash('Unauthorized access', 'error')
         return redirect(url_for('views.index'))
 
-@admin_routes.route('/admin/add_user', methods=['GET', 'POST'])
-@login_required
-def add_user():
-    if session.get('user_type') == 'admin':
-        if request.method == 'POST':
-            name = request.form['name']
-            email = request.form['email']
-            mobile_no = request.form['mobile_no']
-            college = request.form['college']
-            password = request.form['password']
-            confirm_password = request.form['confirm_password']
-            
-            if password != confirm_password:
-                flash('Passwords do not match', 'error')
-                return redirect(url_for('admin_routes.add_user'))
-            
-            existing_user = User.query.filter_by(email=email).first()
-            if existing_user:
-                flash('User with this email already exists', 'error')
-                return redirect(url_for('admin_routes.add_user'))
-
-            # Handle profile photo upload and resizing
-            if 'profile_photo' in request.files:
-                file = request.files['profile_photo']
-                if file.filename != '':
-                    image_data = file.read()
-                    
-                    # Resize the image
-                    img = Image.open(BytesIO(image_data))
-                    img.thumbnail((300, 300))  # Adjust the size as needed
-                    output_buffer = BytesIO()
-                    img.save(output_buffer, format='JPEG')
-                    resized_image_data = output_buffer.getvalue()
-                    
-                    # Save the resized image data to the database
-                    new_user = User(
-                        name=name, 
-                        email=email, 
-                        mobile_no=mobile_no, 
-                        college=college, 
-                        profile_photo=resized_image_data, 
-                        password=generate_password_hash(password),
-                        is_approved=True  # Set is_approved to True
-                    )
-                    db.session.add(new_user)
-                    db.session.commit()
-                    
-                    flash('User added successfully', 'success')
-                    return redirect(url_for('admin_routes.add_user'))
-                else:
-                    flash('No profile photo uploaded', 'error')
-                    return redirect(url_for('admin_routes.add_user'))
-            else:
-                flash('No profile photo uploaded', 'error')
-                return redirect(url_for('admin_routes.add_user'))
-        
-        return render_template('admin/add_user.html')
-    else:
-        flash('You are not authorized to access this page', 'error')
-        return redirect(url_for('admin_routes.admin_dashboard'))
 
 # Route to display the list of approved users
 @admin_routes.route('/admin/user_list')
@@ -118,58 +58,6 @@ def delete_user():
         flash('Unauthorized access', 'error')
         return redirect(url_for('views.index'))
 
-
-# Route to display registration requests to the admin
-@admin_routes.route('/admin/registration_requests')
-@login_required
-def registration_requests():
-    if session.get('user_type') == 'admin':
-        registration_requests = User.query.filter_by(is_approved=False).all()
-        
-        # Convert profile photo to base64 for display
-        for user in registration_requests:
-            if user.profile_photo:
-                user.profile_photo = base64.b64encode(user.profile_photo).decode('utf-8')
-        
-        return render_template('admin/user_requests.html', registration_requests=registration_requests)
-    else:
-        flash('Unauthorized access', 'error')
-        return redirect(url_for('views.index'))
-
-
-# Route to approve a registration request
-@admin_routes.route('/admin/approve_registration/<int:user_id>', methods=['POST'])
-@login_required
-def approve_registration(user_id):
-    if session.get('user_type') == 'admin':
-        user = User.query.get(user_id)
-        if user:
-            user.is_approved = True
-            db.session.commit()
-            flash('Registration request approved successfully', 'success')
-        else:
-            flash('User not found', 'error')
-        return redirect(url_for('admin_routes.registration_requests'))
-    else:
-        flash('Unauthorized access', 'error')
-        return redirect(url_for('views.index'))
-
-# Route to reject a registration request
-@admin_routes.route('/admin/reject_registration/<int:user_id>', methods=['POST'])
-@login_required
-def reject_registration(user_id):
-    if session.get('user_type') == 'admin':
-        user = User.query.get(user_id)
-        if user:
-            db.session.delete(user)  # Delete the user from the database
-            db.session.commit()
-            flash('Registration request rejected and user deleted successfully', 'success')
-        else:
-            flash('User not found', 'error')
-        return redirect(url_for('admin_routes.registration_requests'))
-    else:
-        flash('Unauthorized access', 'error')
-        return redirect(url_for('views.index'))
 
 # Define route for adding a college
 @admin_routes.route('/admin/add_college', methods=['GET', 'POST'])
@@ -213,7 +101,6 @@ def upload_excel():
     return render_template('admin/upload_excel.html', colleges=colleges)
 
 from sqlalchemy.exc import IntegrityError
-
 def parse_and_store_excel(subject_list_file, staff_list_file, college_id):
     try:
         # Read subject list Excel file
@@ -227,8 +114,8 @@ def parse_and_store_excel(subject_list_file, staff_list_file, college_id):
             branch = row['branch']
             semester = row['semester']
             year = row['year']
-            regulation = row['regulation']  # Added regulation
-            integrated = row['integrated']  # Added integrated
+            regulation = row['regulation']
+            integrated = row['integrated']
             
             # Check if subject already exists
             existing_subject = SubjectList.query.filter_by(
@@ -343,6 +230,19 @@ def parse_and_store_excel(subject_list_file, staff_list_file, college_id):
                     )
                     db.session.add(new_subject)
 
+                    # Create and add a new Section if it doesn't exist
+                    existing_section = Section.query.filter_by(
+                        name=handling_section,
+                        subject_code=handling_subject_code
+                    ).first()
+
+                    if not existing_section:
+                        new_section = Section(
+                            name=handling_section,
+                            subject_code=handling_subject_code
+                        )
+                        db.session.add(new_section)
+
         # Commit changes to the database
         db.session.commit()
 
@@ -356,73 +256,136 @@ def parse_and_store_excel(subject_list_file, staff_list_file, college_id):
         db.session.rollback()
 
 
-@admin_routes.route('/admin/assessment_management')
+@admin_routes.route('/admin/ca_management', methods=['GET', 'POST'])
 @login_required
-def assessment_management():
+def ca_management():
     colleges = College.query.all()
-    subjects = Subject.query.all()  # Retrieve all subjects for the admin view
-    return render_template('admin/assessment_management.html', colleges=colleges, subjects=subjects)
+    subjects = []
+    sections = []
+    assessments = []
+    ia_components = []
+
+    selected_college_id = request.form.get('college') or request.args.get('college')
+    selected_subject_id = request.form.get('subject') or request.args.get('subject')
+    selected_section_id = request.form.get('section') or request.args.get('section')
+
+    if selected_college_id:
+        subjects = SubjectList.query.filter_by(college_id=selected_college_id).all()
+
+    if selected_subject_id:
+        subject = SubjectList.query.filter_by(id=selected_subject_id).first()
+        if subject:
+            sections = Section.query.filter_by(subject_code=subject.subject_code).all()
+
+    if selected_section_id:
+        assessments = db.session.query(
+            Assessment, IAComponent, Section
+        ).join(
+            IAComponent, Assessment.ia_component_id == IAComponent.id
+        ).join(
+            Section, Assessment.section_id == Section.id
+        ).filter(
+            Assessment.college_id == selected_college_id,
+            Assessment.subject_id == selected_subject_id,
+            Assessment.section_id == selected_section_id
+        ).all()
+
+        if selected_subject_id and subject:
+            ia_components = IAComponent.query.filter_by(
+                college_id=selected_college_id,
+                subject_code=subject.subject_code,
+                section_id=selected_section_id
+            ).all()
+
+    return render_template(
+        'admin/ca_management.html', 
+        colleges=colleges, 
+        subjects=subjects, 
+        sections=sections, 
+        assessments=assessments,
+        ia_components=ia_components,
+        selected_college_id=selected_college_id,
+        selected_subject_id=selected_subject_id,
+        selected_section_id=selected_section_id
+    )
+
 
 @admin_routes.route('/admin/add_assessment', methods=['POST'])
 @login_required
 def add_assessment():
-    college_id = request.form['college_id']
-    subject_code = request.form['subject_code']
-    section = request.form['section']
-    assessment_type = request.form['assessment_type']
-    count = int(request.form['count'])
-    max_marks = int(request.form['max_marks'])
+    selected_college_id = request.form.get('college')
+    selected_subject_id = request.form.get('subject')
+    selected_section_id = request.form.get('section')
 
-    # Find the staff member who handles the subject for the selected section
-    staff = CollegeStaff.query.filter_by(handling_subject_code=subject_code, handling_section=section, college_id=college_id).first()
+    if 'add_assessment' in request.form:
+        cia_name = request.form.get('cia_name')
+        cia_weightage = float(request.form.get('cia_weightage'))
+        assessment_name = request.form.get('assessment_name')
+        max_marks = int(request.form.get('max_marks'))
+        assessment_weightage = float(request.form.get('assessment_weightage'))
+        count = int(request.form.get('count'))
 
-    if not staff:
-        flash('Staff member not found for the selected subject and section.', 'error')
-        return redirect(url_for('admin_routes.assessment_management'))
+        if assessment_name == 'OTHER':
+            assessment_name = request.form['other_assessment_name']
 
-    # Find the associated subject
-    subject = Subject.query.filter_by(subject_code=subject_code, section=section, college_id=college_id).first()
+        if selected_college_id and selected_subject_id and selected_section_id and cia_name and assessment_name:
+            try:
+                # Check if the IA component already exists
+                ia_component = IAComponent.query.filter_by(
+                    name=cia_name,
+                    college_id=selected_college_id,
+                    subject_code=SubjectList.query.filter_by(id=selected_subject_id).first().subject_code,
+                    section_id=selected_section_id
+                ).first()
 
-    if not subject:
-        flash('Subject not found.', 'error')
-        return redirect(url_for('admin_routes.assessment_management'))
+                if not ia_component:
+                    # Create a new IA Component
+                    ia_component = IAComponent(
+                        name=cia_name,
+                        weightage=cia_weightage,
+                        college_id=selected_college_id,
+                        subject_code=SubjectList.query.filter_by(id=selected_subject_id).first().subject_code,
+                        section_id=selected_section_id
+                    )
+                    db.session.add(ia_component)
+                    db.session.commit()
 
-    if assessment_type == 'OTHER':
-        name = f"{request.form['other_assessment_name'].upper()}({max_marks}M)"
-    else:
-        name = f"{assessment_type}({max_marks}M)"
+                # Create Assessment
+                new_assessment = Assessment(
+                    name=assessment_name,
+                    max_marks=max_marks,
+                    weightage=assessment_weightage,
+                    count=count,
+                    ia_component_id=ia_component.id,
+                    subject_id=selected_subject_id,
+                    college_id=selected_college_id,
+                    section_id=selected_section_id
+                )
+                db.session.add(new_assessment)
+                db.session.commit()
 
-    existing_assessment = Assessment.query.filter_by(
-        name=name,
-        max_marks=max_marks,
-        subject_id=subject.id,
-        user_id=staff.id  # Associate the assessment with the staff member who handles the subject
-    ).first()
+                # Create Assessment Instances
+                for i in range(count):
+                    instance_name = f"{assessment_name} {i+1}"
+                    new_assessment_instance = AssessmentInstance(
+                        name=instance_name,
+                        assessment_id=new_assessment.id,
+                        instance_number=i+1,
+                        subject_id=selected_subject_id,
+                        college_id=selected_college_id,
+                        section_id=selected_section_id
+                    )
+                    db.session.add(new_assessment_instance)
+                    db.session.commit()
 
-    if existing_assessment:
-        existing_assessment.count += count
-        db.session.commit()
-        flash('Assessment count incremented successfully.', 'success')
-    else:
-        new_assessment = Assessment(name=name, count=count, max_marks=max_marks, subject=subject, user_id=staff.id, college_id=college_id)
-        db.session.add(new_assessment)
-        db.session.commit()
-        flash('New assessment added successfully.', 'success')
+                flash('Assessments added successfully', 'success')
+            except Exception as e:
+                db.session.rollback()
+                flash('Error adding assessments', 'danger')
+                print(e)
 
-        existing_instance_count = AssessmentInstance.query.filter_by(assessment_id=new_assessment.id).count()
-        for i in range(1, count + 1):
-            instance_name = f"{name} {existing_instance_count + i}"
-            new_instance = AssessmentInstance(
-                name=instance_name,
-                assessment=new_assessment,
-                user_id=staff.id,
-                subject=subject,
-                college_id=college_id
-            )
-            db.session.add(new_instance)
-        db.session.commit()
+    return redirect(url_for('admin_routes.ca_management', college=selected_college_id, subject=selected_subject_id, section=selected_section_id))
 
-    return redirect(url_for('admin_routes.assessment_management'))
 
 @admin_routes.route('/admin/modify_assessment', methods=['POST'])
 @login_required
@@ -439,6 +402,7 @@ def modify_assessment():
         flash('Assessment deleted successfully.', 'success')
     elif action == 'decrement_count':
         if assessment.count > 0:
+            # Decrement count and delete the last instance
             assessment.count -= 1
             instance_to_delete = AssessmentInstance.query.filter_by(assessment_id=assessment.id).order_by(AssessmentInstance.id.desc()).first()
             if instance_to_delete:
@@ -448,32 +412,19 @@ def modify_assessment():
         else:
             flash('Count cannot be decremented further.', 'error')
     elif action == 'increment_count':
+        # Increment count and create a new instance
         assessment.count += 1
-        new_instance_name = f"{assessment.name} {assessment.count}"
+        new_instance_name = f"{assessment.name} {assessment.count}"  # Generate instance name
         new_instance = AssessmentInstance(
             name=new_instance_name,
-            assessment=assessment,
-            staff_id=assessment.staff_id,  # Ensure the instance is associated with the correct staff
-            subject=assessment.subject,
-            college_id=assessment.college_id
+            assessment_id=assessment.id,
+            instance_number=assessment.count,
+            subject_id=assessment.subject_id,
+            college_id=assessment.college_id,
+            section_id=assessment.section_id
         )
         db.session.add(new_instance)
         db.session.commit()
         flash('Count incremented successfully.', 'success')
 
-    return redirect(url_for('admin_routes.assessment_management'))
-
-
-@admin_routes.route('/get_subjects', methods=['GET'])
-def get_subjects():
-    college_id = request.args.get('college_id')
-    subjects = Subject.query.filter_by(college_id=college_id).all()
-    subject_data = [{'subject_code': subject.subject_code, 'subject_name': subject.subject_name} for subject in subjects]
-    return jsonify({'subjects': subject_data})
-
-@admin_routes.route('/get_sections_and_faculty', methods=['GET'])
-def get_sections_and_faculty():
-    subject_code = request.args.get('subject_code')
-    subjects = Subject.query.filter_by(subject_code=subject_code).all()
-    sections = list(set(subject.section for subject in subjects))
-    return jsonify({'sections': sections})
+    return redirect(url_for('admin_routes.ca_management'))

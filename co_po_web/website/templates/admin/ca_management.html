@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CA Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        
+    </style>
+</head>
+<body>
+    <a href="{{ url_for('auth.back_to_dashboard') }}" class="back-button">Back to Dashboard</a>
+    <h1>Continuous Assessment Management</h1>
+    
+    <form method="POST" action="{{ url_for('admin_routes.ca_management') }}">
+        <div>
+            <label for="college">College:</label>
+            <select name="college" id="college" onchange="this.form.submit()">
+                <option value="">Select College</option>
+                {% for college in colleges %}
+                    <option value="{{ college.id }}" {% if selected_college_id == college.id|string %}selected{% endif %}>{{ college.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        {% if selected_college_id %}
+        <div>
+            <label for="subject">Subject:</label>
+            <select name="subject" id="subject" onchange="this.form.submit()">
+                <option value="">Select Subject</option>
+                {% for subject in subjects %}
+                    <option value="{{ subject.id }}" {% if selected_subject_id == subject.id|string %}selected{% endif %}>{{ subject.subject_code }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+        
+        {% if selected_subject_id %}
+        <div>
+            <label for="section">Section:</label>
+            <select name="section" id="section" onchange="this.form.submit()">
+                <option value="">Select Section</option>
+                {% for section in sections %}
+                    <option value="{{ section.id }}" {% if selected_section_id == section.id|string %}selected{% endif %}>{{ section.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+    </form>
+
+    {% if selected_section_id %}
+    <h2>Add Assessment</h2>
+    <form method="POST" action="{{ url_for('admin_routes.add_assessment') }}">
+        <input type="hidden" name="college" value="{{ selected_college_id }}">
+        <input type="hidden" name="subject" value="{{ selected_subject_id }}">
+        <input type="hidden" name="section" value="{{ selected_section_id }}">
+        
+        <div>
+            <label for="cia_name">CIA Name:</label>
+            <input type="text" name="cia_name" id="cia_name" required>
+        </div>
+        <div>
+            <label for="cia_weightage">CIA Weightage:</label>
+            <input type="number" step="0.01" name="cia_weightage" id="cia_weightage" required>
+        </div>
+        <div>
+            <label for="existing_cia">Existing CIA:</label>
+            <select id="existing_cia" name="existing_cia" onchange="updateCiaFields()" >
+                <option value="">Select Existing CIA</option>
+                {% for ia_component in ia_components %}
+                    <option value="{{ ia_component.name }}" data-cia-weightage="{{ ia_component.weightage }}">
+                        {{ ia_component.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="assessment_name">Assessment Name:</label>
+            <select id="assessment_name" name="assessment_name" onchange="toggleOtherInput(this)" required>
+                <option value="">Select Assessment Type</option>
+                <option value="QUIZ">Quiz</option>
+                <option value="MIDTERM">Midterm</option>
+                <option value="PROJECT">Project</option>
+                <option value="DISCUSSION">Discussion</option>
+                <option value="OTHER">Other</option>
+            </select>
+            <input type="text" name="other_assessment_name" id="other_assessment_name" style="display: none;" placeholder="Enter Custom Assessment Name">
+        </div>        
+        <div>
+            <label for="max_marks">Max Marks:</label>
+            <input type="number" name="max_marks" id="max_marks" required>
+        </div>
+        <div>
+            <label for="assessment_weightage">Assessment Weightage:</label>
+            <input type="number" step="0.01" name="assessment_weightage" id="assessment_weightage" required>
+        </div>
+        <div>
+            <label for="count">Number of Instances:</label>
+            <input type="number" name="count" id="count" required>
+        </div>
+        <div>
+            <button type="submit" name="add_assessment">Add Assessment</button>
+        </div>
+    </form>
+
+    <h2>Assessments</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>CIA</th>
+                <th>Assessment Name</th>
+                <th>Max Marks</th>
+                <th>Weightage</th>
+                <th>Instances</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for assessment, ia_component, section in assessments %}
+            <tr>
+                <td>{{ ia_component.name }}</td>
+                <td>{{ assessment.name }}</td>
+                <td>{{ assessment.max_marks }}</td>
+                <td>{{ assessment.weightage }}</td>
+                <td>{{ assessment.count }}</td>
+                <td>
+                    <form id="form-{{ assessment.id }}" class="assessment-form" method="POST" action="{{ url_for('admin_routes.modify_assessment') }}">
+                        <input type="hidden" name="assessment_id" value="{{ assessment.id }}">
+                        <button type="button" class="action-btn" data-action="decrement_count">-</button>
+                        <button type="button" class="action-btn" data-action="increment_count">+</button>
+                        <button type="button" class="action-btn" data-action="delete_assessment">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var actionButtons = document.querySelectorAll('.action-btn');
+            actionButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    var action = this.getAttribute('data-action');
+                    var form = this.closest('form');
+                    var formData = new FormData(form);
+                    formData.append('action', action);
+
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('POST', form.action, true);
+                    xhr.onload = function() {
+                        if (xhr.status === 200) {
+                            // Refresh the data after successful modification
+                            window.location.reload();
+                        } else {
+                            alert('Error: ' + xhr.statusText);
+                        }
+                    };
+                    xhr.onerror = function() {
+                        alert('Network Error');
+                    };
+                    xhr.send(formData);
+                });
+            });
+        });
+
+        function updateCiaFields() {
+            var select = document.getElementById('existing_cia');
+            var selectedOption = select.options[select.selectedIndex];
+            var ciaName = selectedOption.value;
+            var ciaWeightage = selectedOption.getAttribute('data-cia-weightage');
+            
+            if (ciaName && ciaWeightage) {
+                document.getElementById('cia_name').value = ciaName;
+                document.getElementById('cia_weightage').value = ciaWeightage;
+            }
+        }
+
+        function toggleOtherInput(select) {
+            var inputField = document.getElementById('other_assessment_name');
+            
+            if (select.value === 'OTHER') {
+                inputField.style.display = 'inline-block';
+                inputField.setAttribute('required', 'required');
+                document.getElementById('assessment_name').removeAttribute('required');
+            } else {
+                inputField.style.display = 'none';
+                inputField.removeAttribute('required');
+                document.getElementById('assessment_name').setAttribute('required', 'required');
+            }
+        }
+    </script>
+</body>
+</html>

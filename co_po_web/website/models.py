@@ -3,8 +3,8 @@ sys.path.append('D:/co_po_web')
 from website import db
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy import PickleType
 
-# User Model
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(100), unique=True, nullable=False)
@@ -102,47 +102,71 @@ class SubjectList(db.Model):
 
     college = db.relationship('College', backref=db.backref('subject_lists', lazy=True))
 
-# Assessment Model
+# Section Model
+class Section(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    subject_code = db.Column(db.String(50), nullable=False)  # Add subject_code field
+
+
+    def __init__(self, name, subject_code):
+        self.name = name
+        self.subject_code = subject_code
+
+
+
+class IAComponent(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    weightage = db.Column(db.Float, nullable=False)
+    college_id = db.Column(db.Integer, db.ForeignKey('college.id'), nullable=False)
+    subject_code = db.Column(db.String(100), nullable=False)
+    section_id = db.Column(db.Integer, db.ForeignKey('section.id'), nullable=False)
+
+    college = db.relationship('College', backref=db.backref('ia_components', lazy=True))
+    section = db.relationship('Section', backref=db.backref('ia_components', lazy=True))
+
+    def __repr__(self):
+        return f"IAComponent(name='{self.name}', weightage={self.weightage})"
+
+
 class Assessment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    count = db.Column(db.Integer, nullable=False)
     max_marks = db.Column(db.Integer, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    weightage = db.Column(db.Float, nullable=False)
+    count = db.Column(db.Integer, nullable=False)  # Number of instances
+    ia_component_id = db.Column(db.Integer, db.ForeignKey('ia_component.id'), nullable=False)
     subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)
     college_id = db.Column(db.Integer, db.ForeignKey('college.id'), nullable=False)
+    section_id = db.Column(db.Integer, db.ForeignKey('section.id'), nullable=False)
 
-    user = db.relationship('User', backref=db.backref('assessments', lazy=True))
+    ia_component = db.relationship('IAComponent', backref=db.backref('assessments', lazy=True))
     subject = db.relationship('Subject', backref=db.backref('assessments', lazy=True))
     college = db.relationship('College', backref=db.backref('assessments', lazy=True))
+    section = db.relationship('Section', backref=db.backref('assessments', lazy=True))
 
     def __repr__(self):
-        return f"Assessment(name='{self.name}', count={self.count}, max_marks={self.max_marks})"
+        return f"Assessment(name='{self.name}', max_marks={self.max_marks}, weightage={self.weightage}, count={self.count})"
 
-# AssessmentInstance Model
+
+
+
 class AssessmentInstance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     assessment_id = db.Column(db.Integer, db.ForeignKey('assessment.id'), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    instance_number = db.Column(db.Integer, nullable=False)
     subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)
     college_id = db.Column(db.Integer, db.ForeignKey('college.id'), nullable=False)
-
-    assessment = db.relationship('Assessment', backref=db.backref('instances', lazy=True))
-    user = db.relationship('User', backref=db.backref('assessment_instances', lazy=True))
-    subject = db.relationship('Subject', backref=db.backref('assessment_instances', lazy=True))
-    college = db.relationship('College', backref=db.backref('assessment_instances', lazy=True))
-
+    section_id = db.Column(db.Integer, db.ForeignKey('section.id'), nullable=False)
     excel_file = db.Column(db.LargeBinary)
     mapping_dictionary = db.Column(db.PickleType)
 
+    assessment = db.relationship('Assessment', backref=db.backref('instances', lazy=True))
+    subject = db.relationship('Subject', backref=db.backref('assessment_instances', lazy=True))
+    college = db.relationship('College', backref=db.backref('assessment_instances', lazy=True))
+    section = db.relationship('Section', backref=db.backref('assessment_instances', lazy=True))
+
     def __repr__(self):
-        return f"AssessmentInstance(name='{self.name}')"
-
-# IAComponent Model
-class IAComponent(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    assessment_instance_id = db.Column(db.Integer, db.ForeignKey('assessment_instance.id'), nullable=False)
-
-    assessment_instance = db.relationship('AssessmentInstance', backref=db.backref('ia_components', lazy=True))
+        return f"AssessmentInstance(name='{self.name}', instance_number={self.instance_number})"

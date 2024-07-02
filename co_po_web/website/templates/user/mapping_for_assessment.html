@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapping for Assessment</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .add-question-btn button {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .add-question-btn button:hover {
+            background-color: #218838;
+        }
+        .questions-container {
+            display: flex;
+            flex-direction: column;
+            margin-top: 20px;
+        }
+        .question {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .question input[type="text"],
+        .question select {
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            box-sizing: border-box;
+            flex: 1;
+        }
+        .question button {
+            background-color: #dc3545;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .question button:hover {
+            background-color: #c82333;
+        }
+        .back-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+        .back-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <a href="{{ url_for('auth.back_to_dashboard') }}" class="back-button">Back to Dashboard</a>
+
+    <div class="container">
+        <!-- Left Section -->
+        <div class="section">
+            <h2>Question based Mapping</h2>
+            <h3>Map the questions with the respective COs and define the marks.</h3>
+            <div class="add-question-btn">
+                <button id="addQuestionBtn">+ Add Question</button>
+            </div>
+            <div class="questions-container">
+                <!-- Questions will be dynamically added here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const addQuestionBtn = document.getElementById("addQuestionBtn");
+            const questionsContainer = document.querySelector(".questions-container");
+            let questionCounter = 0;
+
+            // Function to add a question
+            function addQuestion(maxMarks) {
+                questionCounter++;
+
+                const questionWrapper = document.createElement("div");
+                questionWrapper.classList.add("question");
+
+                const questionNumberInput = document.createElement("input");
+                questionNumberInput.type = "text";
+                questionNumberInput.readOnly = true;
+                questionNumberInput.value = `Question ${questionCounter}`;
+                questionNumberInput.classList.add("question-number");
+
+                const maxMarksInput = document.createElement("input");
+                maxMarksInput.type = "text";
+                maxMarksInput.placeholder = "Max Marks";
+                maxMarksInput.name = `question${questionCounter}_maxMarks`;
+                maxMarksInput.value = maxMarks || "";
+
+                const coDropdown = document.createElement("select");
+                coDropdown.name = `question${questionCounter}_co`;
+
+                // Add CO options
+                for (let i = 1; i <= 6; i++) {
+                    const coOption = document.createElement("option");
+                    coOption.value = `CO${i}`;
+                    coOption.textContent = `CO${i}`;
+                    coDropdown.appendChild(coOption);
+                }
+
+                const removeBtn = document.createElement("button");
+                removeBtn.textContent = "Remove";
+                removeBtn.classList.add("remove-question-btn");
+                removeBtn.addEventListener("click", function() {
+                    questionsContainer.removeChild(questionWrapper);
+                    questionCounter--;
+                    updateQuestionNumbers();
+                });
+
+                questionWrapper.appendChild(questionNumberInput);
+                questionWrapper.appendChild(maxMarksInput);
+                questionWrapper.appendChild(coDropdown);
+                questionWrapper.appendChild(removeBtn);
+
+                questionsContainer.appendChild(questionWrapper);
+            }
+
+            // Function to update question numbers
+            function updateQuestionNumbers() {
+                const questionNumbers = document.querySelectorAll(".question-number");
+                questionNumbers.forEach((number, index) => {
+                    number.value = `Question ${index + 1}`;
+                });
+            }
+
+            // Add 10 default questions with max 10 marks each
+            for (let i = 0; i < 10; i++) {
+                addQuestion(10);
+            }
+
+            // Event listener for adding a question
+            addQuestionBtn.addEventListener("click", function() {
+                addQuestion(10); // Default to 10 marks for new questions
+            });
+        });
+    </script>
+</body>
+</html>

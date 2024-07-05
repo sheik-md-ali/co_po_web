@@ -366,7 +366,7 @@ def add_assessment():
 
                 # Create Assessment Instances
                 for i in range(count):
-                    instance_name = f"{assessment_name} {i+1}"
+                    instance_name = f"{assessment_name} {i+1}({max_marks})M"
                     new_assessment_instance = AssessmentInstance(
                         name=instance_name,
                         assessment_id=new_assessment.id,
@@ -385,7 +385,6 @@ def add_assessment():
                 print(e)
 
     return redirect(url_for('admin_routes.ca_management', college=selected_college_id, subject=selected_subject_id, section=selected_section_id))
-
 
 @admin_routes.route('/admin/modify_assessment', methods=['POST'])
 @login_required
@@ -414,7 +413,7 @@ def modify_assessment():
     elif action == 'increment_count':
         # Increment count and create a new instance
         assessment.count += 1
-        new_instance_name = f"{assessment.name} {assessment.count}"  # Generate instance name
+        new_instance_name = f"{assessment.name} {assessment.count}({assessment.max_marks})M"  # Generate instance name with max marks
         new_instance = AssessmentInstance(
             name=new_instance_name,
             assessment_id=assessment.id,
@@ -427,4 +426,4 @@ def modify_assessment():
         db.session.commit()
         flash('Count incremented successfully.', 'success')
 
-    return redirect(url_for('admin_routes.ca_management'))
+    return redirect(url_for('admin_routes.ca_management', college=assessment.college_id, subject=assessment.subject_id, section=assessment.section_id))

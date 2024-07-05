@@ -3,7 +3,7 @@ sys.path.append('D:/co_po_web')
 from website import db
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy import PickleType
+from sqlalchemy import PickleType, JSON
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -151,7 +151,6 @@ class Assessment(db.Model):
 
 
 
-
 class AssessmentInstance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -161,7 +160,9 @@ class AssessmentInstance(db.Model):
     college_id = db.Column(db.Integer, db.ForeignKey('college.id'), nullable=False)
     section_id = db.Column(db.Integer, db.ForeignKey('section.id'), nullable=False)
     excel_file = db.Column(db.LargeBinary)
-    mapping_dictionary = db.Column(db.PickleType)
+    mapping_dictionary = db.Column(JSON)
+    status_for_mapping = db.Column(db.String(20), nullable=False, default='saved')
+    status_for_excel = db.Column(db.String(20), nullable=False, default='saved')
 
     assessment = db.relationship('Assessment', backref=db.backref('instances', lazy=True))
     subject = db.relationship('Subject', backref=db.backref('assessment_instances', lazy=True))

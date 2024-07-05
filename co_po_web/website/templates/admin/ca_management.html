@@ -54,15 +54,6 @@
         <input type="hidden" name="college" value="{{ selected_college_id }}">
         <input type="hidden" name="subject" value="{{ selected_subject_id }}">
         <input type="hidden" name="section" value="{{ selected_section_id }}">
-        
-        <div>
-            <label for="cia_name">CIA Name:</label>
-            <input type="text" name="cia_name" id="cia_name" required>
-        </div>
-        <div>
-            <label for="cia_weightage">CIA Weightage:</label>
-            <input type="number" step="0.01" name="cia_weightage" id="cia_weightage" required>
-        </div>
         <div>
             <label for="existing_cia">Existing CIA:</label>
             <select id="existing_cia" name="existing_cia" onchange="updateCiaFields()" >
@@ -74,6 +65,15 @@
                 {% endfor %}
             </select>
         </div>
+        <div>
+            <label for="cia_name">CIA Name:</label>
+            <input type="text" name="cia_name" id="cia_name" required>
+        </div>
+        <div>
+            <label for="cia_weightage">CIA Weightage:</label>
+            <input type="number" step="0.01" name="cia_weightage" id="cia_weightage" required>
+        </div>
+        
         <div>
             <label for="assessment_name">Assessment Name:</label>
             <select id="assessment_name" name="assessment_name" onchange="toggleOtherInput(this)" required>

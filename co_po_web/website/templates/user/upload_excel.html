@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Assessment</title>
+</head>
+<body>
+    <a href="{{ url_for('auth.back_to_dashboard') }}" class="back-button">Back to Dashboard</a>
+
+    <div class="container">
+        <div class="section">
+            <h2>Upload excel file</h2>
+            <h3>Map the questions with the respective COs and define the marks.</h3>
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            <div>
+                {% for message in messages %}
+                <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            <!-- Form for selecting Subject, Section, and Assessment Instance -->
+            <form method="post" action="{{ url_for('user_routes.upload_excel') }}">
+                <div>
+                    <label for="subjectCode">Subject Code:</label>
+                    <select id="subjectCode" name="subject_code" onchange="this.form.submit()">
+                        <option value="">Select Subject</option>
+                        {% for subject in subjects %}
+                            <option value="{{ subject }}" {% if selected_subject_code == subject %}selected{% endif %}>{{ subject }}</option>
+                        {% endfor %}
+                    </select>
+                </div>                
+                {% if sections %}
+                <div>
+                    <label for="section">Section:</label>
+                    <select id="section" name="section" onchange="this.form.submit()">
+                        <option value="">Select Section</option>
+                        {% for section in sections %}
+                        <option value="{{ section.name }}" {% if selected_section_name == section.name %}selected{% endif %}>
+                            {{ section.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+                {% if assessment_instances %}
+                <div>
+                    <label for="assessmentInstance">Assessment Instance:</label>
+                    <select id="assessmentInstance" name="assessment_instance" onchange="this.form.submit()">
+                        <option value="">Select Assessment Instance</option>
+                        {% for instance in assessment_instances %}
+                        <option value="{{ instance.id }}" {% if selected_assessment_instance_id == instance.id %}selected{% endif %}>
+                            {{ instance.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+                {% if selected_subject_code and selected_section_name and not assessment_instances %}
+                <p>No assessments exist for the selected subject and section.</p>
+                {% endif %}
+                {% if assessment_details %}
+                <div id="assessmentDetails">
+                    <h3>Assessment: {{ assessment_details.name }}</h3>
+                    <p>Max Marks: {{ assessment_details.max_marks }}</p>
+                </div>
+                {% endif %}
+            </form>
+
+            <!-- Form for uploading Excel file -->
+            {% if assessment_details %}
+            <form method="post" action="{{ url_for('user_routes.upload_excel_file') }}" enctype="multipart/form-data">
+                <div>
+                    <label for="assessmentfile">Assessment file (Excel File):</label>
+                    <input type="file" id="assessmentfile" name="assessmentfile" accept=".xls,.xlsx" required>
+                </div>
+                <div>
+                    <button type="submit" name="action" value="save">Save</button>
+                    <button type="submit" name="action" value="submit">Submit</button>
+                </div>
+                <input type="hidden" name="assessment_instance" value="{{ selected_assessment_instance_id }}">
+            </form>
+            <div class="template-download">
+                <p>Download the template Excel file:</p>
+                <a href="{{ url_for('user_routes.download_template', assessment_instance_id=selected_assessment_instance_id) }}" download>Download Template</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

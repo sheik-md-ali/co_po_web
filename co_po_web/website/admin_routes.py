@@ -3,7 +3,7 @@ from flask_login import login_required
 from werkzeug.security import generate_password_hash
 import sys
 sys.path.append('D:/co_po_web')
-from website.models import User, Assessment,IAComponent, Section, College, CollegeStaff, SubjectList, Subject, AssessmentInstance
+from website.models import User, Assessment,IAComponent, Section, College, CollegeStaff, SubjectList, Subject, AssessmentInstance, CoAttainment
 from io import BytesIO
 from PIL import Image
 import base64
@@ -427,3 +427,124 @@ def modify_assessment():
         flash('Count incremented successfully.', 'success')
 
     return redirect(url_for('admin_routes.ca_management', college=assessment.college_id, subject=assessment.subject_id, section=assessment.section_id))
+
+@admin_routes.route('/admin/co_attainment', methods=['GET', 'POST'])
+@login_required
+def co_attainment():
+    colleges = College.query.all()
+    subjects = []
+
+    if request.method == 'POST' and 'college' in request.form:
+        selected_college_id = request.form['college']
+        subjects = SubjectList.query.filter_by(college_id=selected_college_id).all()
+        return render_template('admin/co_attainment.html', colleges=colleges, subjects=subjects, selected_college=selected_college_id)
+    
+    return render_template('admin/co_attainment.html', colleges=colleges, subjects=subjects)
+
+@admin_routes.route('/admin/co_attainment_submit', methods=['POST'])
+@login_required
+def co_attainment_submit():
+    try:
+        selected_college_id = request.form.get('college')
+        selected_subject_code = request.form.get('subject')
+
+        if selected_college_id and selected_subject_code:
+            total_students = request.form.get('totalStudents')
+            batch = request.form.get('batch')
+            practical_component = request.form.get('practicalComponent')
+
+            # Theory and Internal Assessment fields
+            
+            ia_percentage = request.form.get('iaPercentage')
+            ese_percentage = request.form.get('esePercentage')
+            TcourseExitSurveyPercentage = request.form.get('TcourseExitSurveyPercentage')
+
+            # Practical component fields, default to None
+            theory_marks = request.form.get('theoryMarks') if practical_component == 'yes' else 0
+            theory_percentage = request.form.get('theoryPercentage') if practical_component == 'yes' else 0
+            practical_marks = request.form.get('practicalMarks') if practical_component == 'yes' else 0
+            practical_percentage = request.form.get('practicalPercentage') if practical_component == 'yes' else 0
+            prac_ia_percentage = request.form.get('piaPercentage') if practical_component == 'yes' else 0
+            prac_ese_percentage = request.form.get('pesPercentage') if practical_component == 'yes' else 0
+            practicalCourseExitSurveyPercentage = request.form.get('practicalCourseExitSurveyPercentage') if practical_component == 'yes' else 0
+
+            # Collecting CO data
+            cos = []
+            co_index = 1
+            while True:
+                co_label = f'targetCO{co_index}'
+                co_value = request.form.get(co_label)
+                if not co_value:
+                    break
+                cos.append({co_label: co_value})
+                co_index += 1
+
+            # Collecting LOA data
+            loa_data = []
+            loa_min_list = request.form.getlist('loa_min')
+            loa_max_list = request.form.getlist('loa_max')
+            loa_level_list = request.form.getlist('loa_level')
+            for min_val, max_val, level in zip(loa_min_list, loa_max_list, loa_level_list):
+                loa_data.append({'min': min_val, 'max': max_val, 'level': level})
+
+            # Collecting CO-PO mappings
+            copo_mappings = {}
+            for i in range(1, co_index):
+                co_label = f'co{i}'
+                co_pomapping = {}
+                for j in range(1, 13):
+                    key = f'co{i}_po{j}'
+                    value = request.form.get(key)
+                    co_pomapping[f'po{j}'] = value if value else '-'
+                copo_mappings[co_label] = co_pomapping
+
+            # Collecting CO-PSO mappings
+            pso_mappings = {}
+            for i in range(1, co_index):
+                co_label = f'co{i}'
+                co_psomapping = {}
+                for j in range(1, 5):
+                    key = f'co{i}_pso{j}'
+                    value = request.form.get(key)
+                    co_psomapping[f'pso{j}'] = value if value else '-'
+                pso_mappings[co_label] = co_psomapping
+
+            # Collecting practical component data if applicable
+            practical_data = []
+            if practical_component == 'yes':
+                practical_data = [{f'practicalCO{i}': request.form.get(f'practicalCO{i}') or ''} for i in range(1, co_index)]
+
+            # Create and save new CO Attainment entry
+            new_co_attainment = CoAttainment(
+                college_id=selected_college_id,
+                subject_code=selected_subject_code,
+                total_students=total_students,
+                batch=batch,
+                co_data=cos,
+                loa_data=loa_data,
+                practical_component=practical_component,
+                theory_marks=theory_marks,
+                theory_percentage=theory_percentage,
+                practical_marks=practical_marks,
+                practical_percentage=practical_percentage,
+                ia_percentage=ia_percentage,
+                ese_percentage=ese_percentage,
+                TcourseExitSurveyPercentage=TcourseExitSurveyPercentage,
+                prac_ia_percentage=prac_ia_percentage,
+                prac_ese_percentage=prac_ese_percentage,
+                practicalCourseExitSurveyPercentage=practicalCourseExitSurveyPercentage,
+                copo_mappings=copo_mappings,
+                pso_mappings=pso_mappings,
+                practical_data=practical_data
+            )
+
+            db.session.add(new_co_attainment)
+            db.session.commit()
+            flash('CO Attainment data saved successfully!', 'success')
+        else:
+            flash('Please select a college and subject.', 'danger')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error saving CO attainment data: {str(e)}', 'danger')
+
+    return redirect(url_for('admin_routes.co_attainment'))

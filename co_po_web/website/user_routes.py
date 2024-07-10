@@ -1,5 +1,5 @@
 # user_routes.py
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, abort, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, abort, jsonify, send_file
 from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash
 from werkzeug.utils import secure_filename
@@ -10,7 +10,6 @@ from io import BytesIO
 from PIL import Image
 import base64
 from website import db
-from flask import send_file, flash, redirect, url_for
 from openpyxl import Workbook
 import io
 
@@ -20,25 +19,6 @@ user_routes = Blueprint('user_routes', __name__)
 @login_required
 def user_dashboard():
     return render_template('user/user_dashboard.html')
-
-
-@user_routes.route('/update_profile', methods=['POST'])
-@login_required
-def update_profile():
-    # Retrieve form data
-    name = request.form['name']
-    mobile_no = request.form.get('mobile_no')  # Make mobile_no optional
-
-    # Retrieve the current user
-    current_user.name = name
-    current_user.mobile_no = mobile_no  # Update mobile_no if provided
-
-    # Commit changes to the database
-    db.session.commit()
-
-    flash('Profile updated successfully!', 'success')
-    return redirect(url_for('user_routes.user_dashboard'))
-
 
 
 @user_routes.route('/user_subjects')
@@ -101,7 +81,6 @@ def mapping_for_assessment():
                            selected_assessment_instance_id=selected_assessment_instance_id)
 
 
-
 @user_routes.route('/user/save_or_submit_assessment', methods=['POST'])
 @login_required
 def save_or_submit_assessment():
@@ -110,35 +89,32 @@ def save_or_submit_assessment():
     selected_assessment_instance_id = request.form.get('selected_assessment_instance_id')
     action = request.form.get('action')
 
-    # Fetch the assessment instance
     assessment_instance = AssessmentInstance.query.get(selected_assessment_instance_id)
     if not assessment_instance:
         flash('Assessment instance not found.', 'error')
         return redirect(url_for('user_routes.mapping_for_assessment'))
 
-    # If assessment is already submitted, prevent further modifications on both Save and Submit
     if assessment_instance.status_for_mapping == 'submitted':
         flash('Assessment already submitted. Cannot modify further.', 'error')
         return redirect(url_for('user_routes.mapping_for_assessment'))
 
-    # Create a dictionary to store the question mappings
     mapping_dict = {}
     question_count = int(request.form.get('question_count', 0))
+
 
     for i in range(1, question_count + 1):
         max_marks = request.form.get(f'question{i}_maxMarks')
         co_selected = request.form.get(f'question{i}_co')
 
-        if max_marks is not None and co_selected is not None:  # Ensure both values are present
-            mapping_dict[f'question{i}'] = {
+        if max_marks and co_selected:
+            mapping_dict[f'Q{i}'] = {
                 'maxMarks': max_marks,
                 'co': co_selected
             }
 
-    # Update mapping dictionary
+
     assessment_instance.mapping_dictionary = mapping_dict
 
-    # Update assessment status based on action
     if action == 'submit':
         assessment_instance.status_for_mapping = 'submitted'
         flash('Assessment submitted successfully.', 'success')
@@ -234,6 +210,8 @@ def upload_excel_file():
         else:
             flash('Assessment file cannot be modified as it is already submitted.', 'danger')
             return redirect(url_for('user_routes.upload_excel'))
+        
+        
 @user_routes.route('/download/template.xlsx', methods=['GET'])
 @login_required
 def download_template():

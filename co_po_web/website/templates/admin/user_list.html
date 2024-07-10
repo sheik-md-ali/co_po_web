@@ -5,170 +5,224 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User List</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
+        /* Reset and Global Styles */
+        * {
+            box-sizing: border-box;
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            font-family: Arial, sans-serif;
         }
-        h1 {
-            text-align: center;
+
+        body {
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            padding-top: 50px;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-        th, td {
-            padding: 12px 16px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background-color: #007bff;
-            color: #fff;
-            text-transform: uppercase;
-        }
-        td {
-            color: #333;
-        }
-        .back-button {
+
+        a.back-button {
             display: inline-block;
+            margin: 20px;
             padding: 10px 20px;
-            background-color: #007bff;
+            background-color: #272626;
             color: #fff;
             text-decoration: none;
             border-radius: 5px;
-            margin-bottom: 20px;
+            transition: background-color 0.3s;
         }
-        .back-button:hover {
-            background-color: #0056b3;
+
+        a.back-button:hover {
+            background-color: #6d6666;
         }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-top: 20px;
+        }
+
+        .table-container {
+            width: 80%;
+            max-width: 800px;
+            margin: 20px auto;
+            overflow-x: auto;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table th, table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        table th {
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        table td {
+            color: #666;
+        }
+
+        table img {
+            max-width: 100px;
+            height: auto;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        table img:hover {
+            transform: scale(1.1);
+        }
+
         .delete-button {
-            background-color: #dc3545;
+            background-color: #d9534f;
             color: #fff;
             border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
+            padding: 5px 10px;
+            border-radius: 5px;
             cursor: pointer;
+            transition: background-color 0.3s;
         }
+
         .delete-button:hover {
-            background-color: #c82333;
+            background-color: #c9302c;
         }
-        .profile-photo-link {
-            display: block;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            overflow: hidden;
-            cursor: pointer;
-        }
-        .profile-photo-link img {
-            width: 100%;
-            height: auto;
-        }
+
+        /* Modal Styles */
         .modal {
             display: none;
             position: fixed;
-            z-index: 9999;
+            z-index: 1;
+            padding-top: 100px;
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
             overflow: auto;
+            background-color: rgba(0, 0, 0, 0.8);
         }
+
         .modal-content {
-            margin: 20px auto;
-            background-color: transparent;
-            border-radius: 8px;
-            padding: 20px;
-            max-width: 300px;
-            max-height: 300px;
-            text-align: center;
-            overflow: hidden;
-        }
-        .modal-content img {
-            max-width: 300px;
-            max-height: 300px;
-            width: auto;
-            height: auto;
-            display: block;
             margin: auto;
-            border: none;
+            display: block;
+            width: 80%;
+            max-width: 700px;
+            border-radius: 10px;
         }
+
         .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
+            position: absolute;
+            top: 50px;
+            right: 50px;
+            color: #fff;
+            font-size: 40px;
             font-weight: bold;
             cursor: pointer;
+            transition: color 0.3s;
         }
+
         .close:hover,
         .close:focus {
-            color: black;
+            color: #bbb;
             text-decoration: none;
-            cursor: pointer;
-        }
-        .back-button {
-        display: inline-block;
-        padding: 10px 20px;
-        background-color: #007bff;
-        color: #fff;
-        text-decoration: none;
-        border-radius: 4px;
-        transition: background-color 0.3s ease;
         }
 
-        .back-button:hover {
-            background-color: #0056b3;
+        @media (max-width: 768px) {
+            table th, table td {
+                padding: 8px;
+            }
+
+            table img {
+                max-width: 80px;
+            }
+
+            .modal-content {
+                width: 90%;
+            }
+
+            .close {
+                top: 30px;
+                right: 30px;
+                font-size: 30px;
+            }
         }
 
+        @media (max-width: 576px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            a.back-button {
+                padding: 8px 16px;
+            }
+
+            table img {
+                max-width: 60px;
+            }
+
+            .modal-content {
+                width: 95%;
+            }
+
+            .close {
+                top: 20px;
+                right: 20px;
+                font-size: 25px;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>User List</h1>
     <a href="{{ url_for('auth.back_to_dashboard') }}" class="back-button">Back to Dashboard</a>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Profile Photo</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Mobile No</th>
-                <th>College</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for user in users %}
+    <h1>User List</h1>
+    <div class="table-container">
+        <table>
+            <thead>
                 <tr>
-                    <td>{{ user.id }}</td>
-                    <td>
-                        {% if user.profile_photo %}
-                            <img src="data:image/jpeg;base64,{{ user.profile_photo }}" alt="Profile Photo">
-                        {% else %}
-                            No photo available
-                        {% endif %}
-                    </td>                    
-                    <td>{{ user.name }}</td>
-                    <td>{{ user.email }}</td>
-                    <td>{{ user.mobile_no }}</td>
-                    <td>{{ user.college }}</td>
-                    <td>
-                        <form action="{{ url_for('admin_routes.delete_user') }}" method="post">
-                            <input type="hidden" name="user_id" value="{{ user.id }}">
-                            <button type="submit" class="delete-button">Delete</button>
-                        </form>
-                    </td>
+                    <th>ID</th>
+                    <th>Profile Photo</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Mobile No</th>
+                    <th>College</th>
+                    <th>Action</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>
+                            {% if user.profile_photo %}
+                                <img src="data:image/jpeg;base64,{{ user.profile_photo }}" alt="Profile Photo" onclick="showModal('data:image/jpeg;base64,{{ user.profile_photo }}')">
+                            {% else %}
+                                No photo available
+                            {% endif %}
+                        </td>                    
+                        <td>{{ user.name }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.mobile_no }}</td>
+                        <td>{{ user.college }}</td>
+                        <td>
+                            <form action="{{ url_for('admin_routes.delete_user') }}" method="post">
+                                <input type="hidden" name="user_id" value="{{ user.id }}">
+                                <button type="submit" class="delete-button">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
     <!-- Modal for displaying profile photo -->
     <div id="profileModal" class="modal">

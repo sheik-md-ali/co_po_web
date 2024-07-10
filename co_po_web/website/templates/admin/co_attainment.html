@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CO Plan</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <style>
+        .form-inline .form-control {
+            width: auto;
+            display: inline-block;
+        }
+        @media (max-width: 768px) {
+            .form-inline .form-control {
+                width: 100%;
+                display: block;
+            }
+            .table-responsive {
+                overflow-x: auto;
+            }
+            .slider {
+                width: 100%;
+            }
+        }
+        a.back-button {
+            display: inline-block;
+            margin: 20px;
+            padding: 10px 20px;
+            background-color: #272626;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+    
+        a.back-button:hover {
+            background-color: #6d6666;
+        }
+        #save {
+            background-color: orange;
+            border-color: orange;
+            color: white;
+            width: 150px;
+            margin-bottom: 20px;
+            
+        }
+        #save:hover {
+            background-color: #866c3b;
+            border-color: rgb(105, 84, 57);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <a href="{{ url_for('auth.back_to_dashboard') }}" class="back-button">Back to Dashboard</a>
+    <div class="container mt-4">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div>
+            {% for message in messages %}
+            <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+        <h2>Select the properties of subject</h2>
+        <form method="POST" action="{{ url_for('admin_routes.co_attainment') }}">
+            <div class="form-group">
+                <label for="college">Select College</label>
+                <select id="college" name="college" class="form-control" onchange="this.form.submit()">
+                    <option value="">Select College</option>
+                    {% for college in colleges %}
+                        <option value="{{ college.id }}" {% if request.form.get('college') == college.id|string %}selected{% endif %}>{{ college.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="subject">Select Subject:</label>
+                <select name="subject" id="subject" class="form-control" onchange="this.form.submit()">
+                    <option value="">Select Subject</option>
+                    {% for subject in subjects %}
+                        <option value="{{ subject.subject_code }}" {% if request.form.get('subject') == subject.subject_code %}selected{% endif %}>{{ subject.subject_code }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+        
+        <form method="POST" action="{{ url_for('admin_routes.co_attainment_submit') }}">
+            <input type="hidden" name="college" value="{{ request.form.get('college', '') }}">
+            <input type="hidden" name="subject" value="{{ request.form.get('subject', '') }}">
+            <div class="form-group">
+                <label for="totalStudents">Total Students</label>
+                <input type="number" id="totalStudents" name="totalStudents" class="form-control" placeholder="e.g. 160">
+            </div>
+            <div class="form-group">
+                <label for="batch">Batch</label>
+                <input type="text" id="batch" name="batch" class="form-control" placeholder="e.g. 2021-2025">
+            </div>
+            <hr>
+            <h4>Number of Course Outcomes:</h4>
+            <div id="coContainer" class="form-row">
+                <div class="col">
+                    <label>CO1</label>
+                </div>
+            </div>
+            <button type="button" class="btn btn-secondary" id="addCO">Add CO</button>
+            <button type="button" class="btn btn-secondary" id="removeCO">Reduce CO</button>
+            <hr>
+            <h4>Level of Attainment (LOA):</h4>
+            <div id="loaContainer">
+                <div class="form-group form-inline">
+                    <label>LOA for percentage >=</label>
+                    <input type="number" class="form-control mx-1" name="loa_min"> and <=<input type="number" class="form-control mx-1" name="loa_max"> = <input type="number" class="form-control mx-1" name="loa_level">
+                </div>
+            </div>
+            <button type="button" class="btn btn-secondary" id="addLOA">Add LOA</button>
+            <button type="button" class="btn btn-secondary" id="removeLOA">Reduce LOA</button>
+            <hr>
+            <div class="form-group">
+                <label>Is this course has practical component</label>
+                <div>
+                    <input type="radio" name="practicalComponent" value="yes"> Yes
+                    <input type="radio" name="practicalComponent" value="no"> No
+                </div>
+            </div>
+            <div id="practicalCOContainer" style="display:none;">
+                <label>Which are the COs having practical components?</label>
+                <div id="practicalCOs" class="form-row">
+                    <div class="col">
+                        <label for="practicalCO1">CO1</label>
+                        <input type="text" id="practicalCO1" name="practicalCO1" class="form-control" placeholder="Y/N">
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <h4>Target for each CO:</h4>
+            <div id="targetContainer" class="form-row">
+                <div class="col">
+                    <label for="targetCO1">CO1</label>
+                    <input type="text" id="targetCO1" name="targetCO1" class="form-control">
+                </div>
+            </div>
+            <hr>
+            <h4>CO-PO Mapping:</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>CO/PO</th>
+                            <th>PO1</th>
+                            <th>PO2</th>
+                            <th>PO3</th>
+                            <th>PO4</th>
+                            <th>PO5</th>
+                            <th>PO6</th>
+                            <th>PO7</th>
+                            <th>PO8</th>
+                            <th>PO9</th>
+                            <th>PO10</th>
+                            <th>PO11</th>
+                            <th>PO12</th>
+                        </tr>
+                    </thead>
+                    <tbody id="coPoMappingContainer">
+                        <tr>
+                            <td>CO1</td>
+                            <td><input type="text" name="co1_po1" class="form-control"></td>
+                            <td><input type="text" name="co1_po2" class="form-control"></td>
+                            <td><input type="text" name="co1_po3" class="form-control"></td>
+                            <td><input type="text" name="co1_po4" class="form-control"></td>
+                            <td><input type="text" name="co1_po5" class="form-control"></td>
+                            <td><input type="text" name="co1_po6" class="form-control"></td>
+                            <td><input type="text" name="co1_po7" class="form-control"></td>
+                            <td><input type="text" name="co1_po8" class="form-control"></td>
+                            <td><input type="text" name="co1_po9" class="form-control"></td>
+                            <td><input type="text" name="co1_po10" class="form-control"></td>
+                            <td><input type="text" name="co1_po11" class="form-control"></td>
+                            <td><input type="text" name="co1_po12" class="form-control"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <hr>
+            <h4>Program Specific Outcomes (PSO):</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>CO/PSO</th>
+                            <th>PSO1</th>
+                            <th>PSO2</th>
+                            <th>PSO3</th>
+                            <th>PSO4</th>
+                        </tr>
+                    </thead>
+                    <tbody id="psoMappingContainer">
+                        <tr>
+                            <td>CO1</td>
+                            <td><input type="text" name="co1_pso1" class="form-control"></td>
+                            <td><input type="text" name="co1_pso2" class="form-control"></td>
+                            <td><input type="text" name="co1_pso3" class="form-control"></td>
+                            <td><input type="text" name="co1_pso4" class="form-control"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <hr>
+            <div id="internalAssessmentPracticalContainer" style="display:none;">
+            <h4>CO Attainment - Internal Assessment (Theory and Practical Component):</h4>
+            <div class="form-group form-inline">
+                <label>Marks to be taken: </label>
+                <input type="number" name="theoryMarks" class="form-control mx-1"> % of <input type="number" name="theoryPercentage" class="form-control mx-1"> % of Theory CIA
+                <small class="form-text text-muted">     eg: 65% of 100% of Theory CIA</small>
+            </div>
+            <div class="form-group form-inline">
+                <label>Marks to be taken: </label>
+                <input type="number" name="practicalMarks" class="form-control mx-1"> % of <input type="number" name="practicalPercentage" class="form-control mx-1"> % of Practical CIA
+                <small class="form-text text-muted">     eg: 35% of 100% of Practical CIA</small>
+            </div>
+            <hr>
+          </div>
+            <h4>Overall CO Attainment (Theory Courses):</h4>
+            <div class="form-group form-inline">
+                <input type="number" name="iaPercentage" class="form-control mx-1"> % of IA (Internal Assessment)
+                <small class="form-text text-muted">eg: 45% of IA</small>
+            </div>
+            <div class="form-group form-inline">
+                <input type="number" name="esePercentage" class="form-control mx-1"> % of ESE (End Semester Examination)
+                <small class="form-text text-muted">eg: 55% of ESE</small>
+            </div>
+            <div class="form-group form-inline">
+                <input type="number" name="TcourseExitSurveyPercentage" class="form-control mx-1"> % of Course Exit Survey
+                <small class="form-text text-muted">eg: 10% of Course Exit Survey</small>
+            </div>
+            <hr>
+            <div id="AssessmentPracticalContainer" style="display:none;">
+            <h4>Overall CO Attainment (Practical Courses):</h4>
+            <div class="form-group form-inline">
+                <input type="number" name="piaPercentage" class="form-control mx-1"> % of PIA (Practical Internal Assessment)
+                <small class="form-text text-muted">eg: 30% of PIA</small>
+            </div>
+            <div class="form-group form-inline">
+                <input type="number" name="pesPercentage" class="form-control mx-1"> % of PES (Practical End Semester)
+                <small class="form-text text-muted">eg: 70% of PES</small>
+            </div>
+            <div class="form-group form-inline">
+                <input type="number" name="practicalCourseExitSurveyPercentage" class="form-control mx-1"> % of Course Exit Survey
+                <small class="form-text text-muted">eg: 10% of Course Exit Survey</small>
+            </div>
+            <hr>
+            </div>
+            <button id="save" type="submit" class="btn btn-primary">Save</button>
+
+        </form>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+    <script>
+
+        
+        // JavaScript code to add and remove CO and LOA fields
+        document.getElementById('addCO').addEventListener('click', function() {
+            const coContainer = document.getElementById('coContainer');
+            const newIndex = coContainer.children.length + 1;
+            const newCo = document.createElement('div');
+            newCo.className = 'col';
+            newCo.innerHTML = `<label>CO${newIndex}</label>`;
+            coContainer.appendChild(newCo);
+    
+            // Add new CO to CO-PO Mapping table
+            const coPoMappingContainer = document.getElementById('coPoMappingContainer');
+            const newCoPoRow = document.createElement('tr');
+            newCoPoRow.innerHTML = `
+                <td>CO${newIndex}</td>
+                <td><input type="text" name="co${newIndex}_po1" class="form-control"></td>
+                <td><input type="text" name="co${newIndex}_po2" class="form-control"></td>
+                <td><input type="text" name="co${newIndex}_po3" class="form-control"></td>
+                <td><input type="text" name="co${newIndex}_po4" class="form-control"></td>
+                <td><input type="text" name="co${newIndex}_po5" class="form-control"></td>
+                <td><input type="text" name="co${newIndex}_po6" class="form-control"></td>
+                <td><input type="text" name="co${newIndex}_po7" class="form-control"></td>
+                <td><input type="text" name="co${newIndex}_po8" class="form-control"></td>
+                <td><input type="text" name="co${newIndex}_po9" class="form-control"></td>
+                <td><input type="text" name="co${newIndex}_po10" class="form-control"></td>
+                <td><input type="text" name="co${newIndex}_po11" class="form-control"></td>
+                <td><input type="text" name="co${newIndex}_po12" class="form-control"></td>
+            `;
+            coPoMappingContainer.appendChild(newCoPoRow);
+    
+            // Add new CO to PSO Mapping table
+            const psoMappingContainer = document.getElementById('psoMappingContainer');
+            const newPsoRow = document.createElement('tr');
+            newPsoRow.innerHTML = `
+                <td>CO${newIndex}</td>
+                <td><input type="text" name="co${newIndex}_pso1" class="form-control"></td>
+                <td><input type="text" name="co${newIndex}_pso2" class="form-control"></td>
+                <td><input type="text" name="co${newIndex}_pso3" class="form-control"></td>
+                <td><input type="text" name="co${newIndex}_pso4" class="form-control"></td>
+            `;
+            psoMappingContainer.appendChild(newPsoRow);
+    
+            // Add new CO to target input
+            const targetContainer = document.getElementById('targetContainer');
+            const newTarget = document.createElement('div');
+            newTarget.className = 'col';
+            newTarget.innerHTML = `<label for="targetCO${newIndex}">CO${newIndex}</label>
+                                   <input type="text" id="targetCO${newIndex}" name="targetCO${newIndex}" class="form-control">`;
+            targetContainer.appendChild(newTarget);
+    
+            // Add new CO to practical component input if visible
+            const practicalCOContainer = document.getElementById('practicalCOContainer');
+            if (practicalCOContainer.style.display !== 'none') {
+                updatePracticalCOs(newIndex);
+            }
+        });
+    
+        document.getElementById('removeCO').addEventListener('click', function() {
+            const coContainer = document.getElementById('coContainer');
+            if (coContainer.children.length > 1) {
+                coContainer.removeChild(coContainer.lastElementChild);
+                
+                const coPoMappingContainer = document.getElementById('coPoMappingContainer');
+                coPoMappingContainer.removeChild(coPoMappingContainer.lastElementChild);
+                
+                const psoMappingContainer = document.getElementById('psoMappingContainer');
+                psoMappingContainer.removeChild(psoMappingContainer.lastElementChild);
+                
+                const targetContainer = document.getElementById('targetContainer');
+                targetContainer.removeChild(targetContainer.lastElementChild);
+    
+                const practicalCOContainer = document.getElementById('practicalCOContainer');
+                if (practicalCOContainer.style.display !== 'none') {
+                    updatePracticalCOs(coContainer.children.length);
+                }
+            }
+        });
+    
+        document.getElementById('addLOA').addEventListener('click', function() {
+            const loaContainer = document.getElementById('loaContainer');
+            const newLoa = document.createElement('div');
+            newLoa.className = 'form-group form-inline';
+            newLoa.innerHTML = `<label>LOA for percentage >=</label>
+                                <input type="number" class="form-control mx-1" name="loa_min"> and <=
+                                <input type="number" class="form-control mx-1" name="loa_max"> = 
+                                <input type="number" class="form-control mx-1" name="loa_level">`;
+            loaContainer.appendChild(newLoa);
+        });
+    
+        document.getElementById('removeLOA').addEventListener('click', function() {
+            const loaContainer = document.getElementById('loaContainer');
+            if (loaContainer.children.length > 1) {
+                loaContainer.removeChild(loaContainer.lastElementChild);
+            }
+        });
+    
+        // Handle change in practical component radio buttons
+        document.querySelectorAll('input[name="practicalComponent"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const practicalCOContainer = document.getElementById('practicalCOContainer');
+                if (this.value === 'yes') {
+                    practicalCOContainer.style.display = 'block';
+                    updatePracticalCOs(document.getElementById('coContainer').children.length);
+                } else {
+                    practicalCOContainer.style.display = 'none';
+                }
+            });
+        });
+    
+        // Function to update practical COs based on CO count
+        function updatePracticalCOs(count) {
+        const practicalCOContainer = document.getElementById('practicalCOContainer');
+        practicalCOContainer.innerHTML = ''; // Clear existing inputs
+
+        const practicalCOsRow = document.createElement('div');
+        practicalCOsRow.className = 'form-row';
+
+        for (let i = 1; i <= count; i++) {
+            const newPracticalCO = document.createElement('div');
+            newPracticalCO.className = 'col';
+            newPracticalCO.innerHTML = `
+                <label for="practicalCO${i}">CO${i}</label>
+                <input type="text" id="practicalCO${i}" name="practicalCO${i}" class="form-control mx-1" placeholder="Y/N">
+            `;
+            practicalCOsRow.appendChild(newPracticalCO);
+        }
+
+        practicalCOContainer.appendChild(practicalCOsRow);
+    }
+
+    
+        // Initial setup based on existing CO count and radio button state
+        const initialCOCount = document.getElementById('coContainer').children.length;
+        updatePracticalCOs(initialCOCount);
+        const initialPracticalComponent = document.querySelector('input[name="practicalComponent"]:checked');
+        if (initialPracticalComponent && initialPracticalComponent.value === 'yes') {
+            document.getElementById('practicalCOContainer').style.display = 'block';
+        }
+
+        $(document).ready(function() {
+            function togglePracticalFields() {
+                var isChecked = $('input[name="practicalComponent"]:checked').val() === 'yes';
+                $('#practicalCOContainer').toggle(isChecked);
+                $('#internalAssessmentPracticalContainer').toggle(isChecked);
+                $('#AssessmentPracticalContainer').toggle(isChecked);
+            }
+
+            $('input[name="practicalComponent"]').on('change', togglePracticalFields);
+        });
+        togglePracticalFields();
+    </script>
+    
+</body>
+</html>

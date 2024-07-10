@@ -1,0 +1,277 @@
+/* Reset and Global Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background-color: #f4f4f4;
+}
+
+/* Navigation Styles */
+nav {
+  width: 280px;
+  height: 100vh;
+  background-color: #272626;
+  position: fixed;
+  top: 0;
+  left: -280px; /* Initially hidden */
+  overflow-y: auto;
+  padding-top: 20px;
+  transition: transform 0.3s ease, left 0.3s ease;
+}
+
+nav ul {
+  list-style-type: none;
+}
+
+nav ul li {
+  padding: 15px;
+  text-align: center;
+}
+
+nav ul li a {
+  text-decoration: none;
+  color: #fff;
+  display: block;
+  padding: 10px;
+  transition: background-color 0.3s;
+}
+
+nav ul li a:hover {
+  background-color: #6d6666;
+}
+
+nav .logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
+nav .logo img {
+  width: 50px;
+  height: 50px;
+  margin-right: 10px;
+}
+
+nav .logo .nav-item {
+  font-size: 20px;
+  font-weight: bold;
+  text-decoration: none;
+  color: white;
+}
+
+.menu-toggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  color: #000;
+  font-size: 24px;
+  cursor: pointer;
+  display: block; /* Always show the menu button */
+}
+
+/* Main Content Styles */
+.container {
+  display: flex;
+  flex-direction: column;
+  margin-left: 0; /* Initially no margin */
+  padding: 20px;
+  transition: margin-left 0.3s ease;
+}
+
+.main {
+  width: 100%;
+}
+
+.main-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.main-top h1 {
+  font-size: 24px;
+  color: #333; /* Updated color */
+}
+
+.main-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.card {
+  flex: 1 1 calc(25% - 20px);
+  background-color: #fff;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+.card h3 {
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: #333; /* Updated color */
+}
+
+.card p {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.card button {
+  background-color: orangered;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.card button:hover {
+  background-color: rgba(223, 70, 15, 0.856);
+}
+
+/* Courses Section Styles */
+.main-course {
+  width: 100%;
+  margin-top: 40px;
+}
+
+.course-box {
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+.course-box h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333; /* Updated color */
+}
+
+.course-box ul {
+  display: flex;
+  list-style-type: none;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.course-box ul li {
+  font-size: 16px;
+  color: #999;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.course-box ul li.active {
+  color: #000;
+  border-bottom: 2px solid #000;
+}
+
+.course {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.box {
+  flex: 1 1 calc(33% - 20px);
+  background-color: rgb(235, 233, 233);
+  border-radius: 10px;
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  transition: transform 0.3s;
+}
+
+.box:hover {
+  transform: translateY(-5px);
+}
+
+.box h3 {
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: #333; /* Updated color */
+}
+
+.box p {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.box button {
+  background-color: #000;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.box button:hover {
+  background-color: rgba(0, 0, 0, 0.842);
+}
+
+/* Media Queries */
+@media (min-width: 769px) {
+  nav {
+    left: 0;
+  }
+
+  .container {
+    margin-left: 280px; /* Main content shifted when nav is visible */
+  }
+
+  .menu-toggle {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  nav {
+    left: -280px; /* Initially hidden on smaller screens */
+  }
+
+  nav.open {
+    left: 0;
+  }
+
+  .container {
+    padding-top: 60px;
+  }
+
+  .main-top h1 {
+    font-size: 20px;
+  }
+
+  .main-skills .card,
+  .box {
+    flex: 1 1 calc(50% - 20px);
+  }
+}
+
+@media (max-width: 480px) {
+  .main-top h1 {
+    font-size: 18px;
+  }
+
+  .main-skills .card,
+  .box {
+    flex: 1 1 100%;
+  }
+}

@@ -171,3 +171,29 @@ class AssessmentInstance(db.Model):
 
     def __repr__(self):
         return f"AssessmentInstance(name='{self.name}', instance_number={self.instance_number})"
+    
+
+class CoAttainment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    college_id = db.Column(db.Integer, db.ForeignKey('college.id'), nullable=False)
+    subject_code = db.Column(db.String(100), nullable=False)
+    total_students = db.Column(db.Integer, nullable=False)
+    batch = db.Column(db.String(100), nullable=False)
+    co_data = db.Column(db.JSON, nullable=False)
+    loa_data = db.Column(db.JSON, nullable=False)
+    practical_component = db.Column(db.String(10), nullable=False)
+    practical_data = db.Column(db.JSON)
+    theory_marks = db.Column(db.Float, nullable=False)
+    theory_percentage = db.Column(db.Float, nullable=False)
+    practical_marks = db.Column(db.Float, nullable=False)
+    practical_percentage = db.Column(db.Float, nullable=False)
+    ia_percentage = db.Column(db.Float, nullable=False)
+    ese_percentage = db.Column(db.Float, nullable=False)
+    TcourseExitSurveyPercentage = db.Column(db.Float, nullable=False)
+    prac_ia_percentage = db.Column(db.Float, nullable=False)
+    prac_ese_percentage = db.Column(db.Float, nullable=False)
+    practicalCourseExitSurveyPercentage = db.Column(db.Float, nullable=False)
+    copo_mappings = db.Column(db.JSON, nullable=False)  
+    pso_mappings = db.Column(db.JSON, nullable=False)  
+
+    college = db.relationship('College', backref=db.backref('co_attainments', lazy=True))

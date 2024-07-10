@@ -1,13 +1,14 @@
 <!DOCTYPE html>
-<!-- Created By CodingNepal -->
-<html lang="en" dir="ltr">
-   <head>
-      <meta charset="utf-8">
-      <title>Login</title>
-      <link rel="stylesheet" href="../static/css/login.css">
-      
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
-      <style>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/css/login.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.6.2/css/bootstrap.min.css">
+    <style>
+        /* Custom CSS for login form */
         body {
             font-family: Arial, sans-serif;
             background-color: #f5f5f5;
@@ -17,15 +18,14 @@
 
         .login-form {
             max-width: 400px;
-            margin: 0 auto;
+            margin: 50px auto;
             background-color: #fff;
             border-radius: 10px;
             padding: 30px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-            margin-top: 50px;
         }
 
-        .text {
+        .login-form .text {
             text-align: center;
             font-size: 24px;
             font-weight: bold;
@@ -33,16 +33,16 @@
             color: #333;
         }
 
-        .form {
+        .login-form .form {
             margin-top: 20px;
         }
 
-        .field {
+        .login-form .field {
             position: relative;
             margin-bottom: 20px;
         }
 
-        .field input {
+        .login-form .field input {
             width: calc(100% - 40px);
             padding: 10px;
             border: 1px solid #ccc;
@@ -52,7 +52,7 @@
             font-size: 16px;
         }
 
-        .field .fas {
+        .login-form .field .fas {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
@@ -60,7 +60,7 @@
             color: #666;
         }
 
-        button {
+        .login-form button {
             width: 100%;
             background-color: #007bff;
             color: #fff;
@@ -72,22 +72,22 @@
             font-size: 16px;
         }
 
-        button:hover {
+        .login-form button:hover {
             background-color: #0056b3;
         }
 
-        .link {
+        .login-form .link {
             text-align: center;
             margin-top: 20px;
         }
 
-        .link a {
+        .login-form .link a {
             color: #007bff;
             text-decoration: none;
             font-size: 14px;
         }
 
-        .link a:hover {
+        .login-form .link a:hover {
             text-decoration: underline;
         }
 
@@ -95,56 +95,57 @@
             padding: 10px;
             border-radius: 5px;
             margin-bottom: 10px;
+            color: #fff;
         }
 
         .flash-success {
             background-color: #28a745;
-            color: #fff;
         }
 
         .flash-error {
             background-color: #dc3545;
-            color: #fff;
         }
-
-      </style>
-   </head>
-   <body>
-    <div class="login-form">
-        <div class="text">
-            LOGIN
-        </div>
-        <!-- Display flashed messages -->
-        <div id="flash-messages">
-            {% with messages = get_flashed_messages() %}
-                {% if messages %}
-                    {% for message in messages %}
-                        <div class="flash-message {% if 'error' in message %}flash-error{% else %}flash-success{% endif %}">
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .login-form {
+                margin-top: 20px;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="login-form">
+    <div class="text">LOGIN</div>
+    <!-- Display flashed messages from login route only -->
+    <div id="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    {% if category == 'error' or category == 'success' %}
+                        <div class="flash-message flash-{{ category }}">
                             {{ message }}
                         </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-        </div>
-        <form action="/login" method="POST" class="form">
-            <div class="field">
-                <div class="fas fa-envelope"></div>
-                <input type="text" placeholder="Email" name="email"> <!-- Add name="email" here -->
-            </div>
-            <div class="field">
-                <div class="fas fa-lock"></div>
-                <input type="password" placeholder="Password" name="password"> <!-- Add name="password" here -->
-            </div>
-            <button type="submit">LOGIN</button> <!-- Added type="submit" here -->
-            <div class="link">
-                Not a User?
-                <a href="/register">Register</a>
-            </div>
-        </form>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
     </div>
-    
-   </body>
-  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.slim.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <form action="/login" method="POST" class="form">
+        <div class="field">
+            <div class="fas fa-envelope"></div>
+            <input type="text" placeholder="Email" name="email">
+        </div>
+        <div class="field">
+            <div class="fas fa-lock"></div>
+            <input type="password" placeholder="Password" name="password">
+        </div>
+        <button type="submit">LOGIN</button>
+        <div class="link">
+            Not a User? <a href="#">Register</a>
+        </div>
+    </form>
+</div>
+</body>
 </html>

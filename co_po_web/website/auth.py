@@ -62,8 +62,3 @@ def logout():
     session.pop('user_type', None)
     return redirect(url_for('views.index'))
 
-# Route to render the registration form
-@auth.route('/register', methods=['GET'])
-def show_register_form():
-    return render_template('register.html')
-

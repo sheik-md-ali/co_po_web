@@ -2,6 +2,7 @@
 <html>
   <head>
     <title>dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/user/user_dashboard.css') }}" />
   </head>
   <body>
@@ -10,7 +11,7 @@
     <div class="header-logo">
       <a href="#">
         <div>
-          <img src="https://assets.codepen.io/285131/untitled-ui-icon.svg" />
+          <img src="https://assets.codepe.io/285131/untitled-ui-icon.svg" />
         </div>
         <img src="https://assets.codepen.io/285131/untitled-ui.svg" />
       </a>
@@ -55,9 +56,9 @@
           <i class="ph-faders-bold"></i>
           <span>Filters</span>
         </a>
-        <a href="#" class="button">
+        <a href="{{url_for('user_routes.user_subjects')}}" class="button">
           <i class="ph-plus-bold"></i>
-          <span>Register subject</span>
+          <span>My subjects</span>
         </a>
       </div>
     </div>
@@ -66,7 +67,7 @@
             <div class="vertical-tabs">
                 <a href="#" class="active">Menu</a>
                 <a href="#">Profile</a>
-                <a href="{{url_for('user_routes.user_subjects')}}">My Subjects</a>
+                <a href="#">information</a>
                 <a href="#">User Guide</a>
                 <a href="#">Request changes</a>
                 <a href="#">Integration Methods</a>
@@ -88,7 +89,7 @@
               
             </div>
             <div class="card-body">
-              <p>Give the name and assessment count. </p>
+              <p>Check the No of assessments exist</p>
             </div>
             <div class="card-footer">
               <a href="#">Click here</a>
@@ -102,7 +103,7 @@
               </div>
             </div>
             <div class="card-body">
-              <p>Define your subject IA includings.</p>
+              <p>Enter your question paper pattern.</p>
             </div>
             <div class="card-footer">
               <a href="{{ url_for('user_routes.mapping_for_assessment') }}">Click here</a>
@@ -117,7 +118,7 @@
               
             </div>
             <div class="card-body">
-              <p>Create the mapping for your assessment.</p>
+              <p>Upload the assessment files.</p>
             </div>
             <div class="card-footer">
               <a href="{{ url_for('user_routes.upload_excel') }}">Click here</a>

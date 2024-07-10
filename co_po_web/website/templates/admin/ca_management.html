@@ -3,15 +3,218 @@
 <head>
     <meta charset="UTF-8">
     <title>CA Management</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <style>
-        
+        /* Reset and Global Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+    
+        body {
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+    
+        a.back-button {
+            display: inline-block;
+            margin: 20px;
+            padding: 10px 20px;
+            background-color: #272626;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+    
+        a.back-button:hover {
+            background-color: #6d6666;
+        }
+    
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-top: 20px;
+        }
+    
+        form {
+            width: 80%;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+    
+        form div {
+            margin-bottom: 15px;
+        }
+    
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+    
+        select, input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            transition: border-color 0.3s;
+        }
+    
+        select:focus, input[type="text"]:focus, input[type="number"]:focus {
+            border-color: #6d6666;
+        }
+    
+        button[type="submit"], button.action-btn {
+            background-color: orangered;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 100%;
+            text-align: center;
+        }
+    
+        button[type="submit"]:hover, button.action-btn:hover {
+            background-color: rgba(223, 70, 15, 0.856);
+        }
+    
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-top: 20px;
+        }
+    
+        table {
+            width: 80%;
+            max-width: 800px;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            overflow-x: auto; /* Enable horizontal scroll on smaller screens */
+            max-width: 100%; /* Ensure table does not exceed screen width */
+        }
+    
+        table th, table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+    
+        table th {
+            background-color: #f4f4f4;
+            color: #333;
+        }
+    
+        table td {
+            color: #666;
+        }
+    
+        .assessment-form {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+    
+        .assessment-form .action-btn {
+            background-color: #6d6666;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            transition: background-color 0.3s;
+        }
+    
+        .assessment-form .action-btn:last-child {
+            margin-right: 2px;
+        }
+    
+        .assessment-form .delete-btn {
+            background-color: hwb(2 1% 8%);
+        }
+    
+        .assessment-form .increment-btn {
+            background-color: #02779b;
+        }
+    
+        .assessment-form .decrement-btn {
+            background-color: #dd8203;
+        }
+    
+        .assessment-form .action-btn:hover {
+            background-color: #555;
+        }
+    
+        .assessment-form .decrement-btn:hover {
+            background-color:#6d6666;
+        }
+    
+        .assessment-form .increment-btn:hover {
+            background-color:#6d6666;
+        }
+    
+        .assessment-form .delete-btn:hover {
+            background-color: #6d6666;
+        }
+    
+        /* Media Queries */
+        @media only screen and (max-width: 768px) {
+            form {
+                width: 90%;
+            }
+    
+            table {
+                width: 100%;
+            }
+    
+            table thead {
+                display: none;
+            }
+    
+            table td {
+                display: block;
+                text-align: center;
+                padding: 8px;
+            }
+    
+            .assessment-form .action-btn {
+                padding: 5px;
+                font-size: 12px;
+            }
+        }
     </style>
+    
 </head>
 <body>
     <a href="{{ url_for('auth.back_to_dashboard') }}" class="back-button">Back to Dashboard</a>
     <h1>Continuous Assessment Management</h1>
-    
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <div>
+        {% for message in messages %}
+        <p>{{ message }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
     <form method="POST" action="{{ url_for('admin_routes.ca_management') }}">
         <div>
             <label for="college">College:</label>
@@ -108,9 +311,10 @@
         <thead>
             <tr>
                 <th>CIA</th>
+                <th>CIA weightage</th>
                 <th>Assessment Name</th>
                 <th>Max Marks</th>
-                <th>Weightage</th>
+                <th>AssessmentWeightage</th>
                 <th>Instances</th>
                 <th>Actions</th>
             </tr>
@@ -119,18 +323,19 @@
             {% for assessment, ia_component, section in assessments %}
             <tr>
                 <td>{{ ia_component.name }}</td>
+                <td>{{ ia_component.weightage}}</td>
                 <td>{{ assessment.name }}</td>
                 <td>{{ assessment.max_marks }}</td>
                 <td>{{ assessment.weightage }}</td>
                 <td>{{ assessment.count }}</td>
                 <td>
-                    <form id="form-{{ assessment.id }}" class="assessment-form" method="POST" action="{{ url_for('admin_routes.modify_assessment') }}">
+                    <form id="assessment-form-{{ assessment.id }}" class="assessment-form" method="POST" action="{{ url_for('admin_routes.modify_assessment') }}">
                         <input type="hidden" name="assessment_id" value="{{ assessment.id }}">
-                        <button type="button" class="action-btn" data-action="decrement_count">-</button>
-                        <button type="button" class="action-btn" data-action="increment_count">+</button>
-                        <button type="button" class="action-btn" data-action="delete_assessment">Delete</button>
+                        <button type="button" class="action-btn decrement-btn" data-action="decrement_count">-</button>
+                        <button type="button" class="action-btn increment-btn" data-action="increment_count">+</button>
+                        <button type="button" class="action-btn delete-btn" data-action="delete_assessment">Delete</button>
                     </form>
-                </td>
+                </td>                
             </tr>
             {% endfor %}
         </tbody>

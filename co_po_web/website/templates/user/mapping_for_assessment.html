@@ -4,12 +4,214 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mapping for Assessment</title>
+    <style>
+ /* General Styles */
+ body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        h2, h3 {
+            color: #333;
+        }
+
+        a.back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background-color: #185494;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        a.back-button:hover {
+            background-color: rgb(19, 47, 77);
+        }
+
+        /* Form Styles */
+        form div {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        select, input[type="text"], button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            margin-left: 5px;
+            
+        }
+
+        button {
+            background: linear-gradient(to right, #007bff, #0056b3);
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-left: 20px;
+            
+        }
+
+        button:hover {
+            background: linear-gradient(to right, #0056b3, #003c80);
+        }
+
+        .save-submit-buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .save-submit-buttons button {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        
+
+        /* Questions Container */
+        .questions-container {
+            display: flex;
+            flex-wrap: wrap;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+            background-color: #fafafa;
+        }
+
+        /* Question Item */
+        .question {
+            margin-right: 5px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .question-number {
+            flex: 1 1 100%;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .question input[type="text"],
+        .question select {
+            flex: 1 1 calc(50% - 10px);
+            padding: 8px;
+            margin-right: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+       
+
+        
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .question input[type="text"], .question select {
+                flex: 1 1 100%;
+                margin-right: 0;
+            }
+
+            .remove-question-btn {
+                flex: 1 1 100%;
+                margin-left: 0;
+                margin-top: 3px;
+            }
+
+            .save-submit-buttons {
+                flex-direction: column;
+                
+            }
+
+            .save-submit-buttons button {
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+
+            a.back-button {
+                padding: 8px 16px;
+            }
+
+            form div {
+                margin-bottom: 15px;
+            }
+
+            h2, h3 {
+                font-size: 1.5em;
+            }
+
+            .add-question-btn {
+                text-align: center;
+            }
+
+            button {
+                width: 100%;
+            
+            }
+
+            .question-number {
+                font-size: 1em;
+            }
+        }
+
+        .button-wrapper {
+            max-width: 300px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .button-wrapper button {
+            flex: 1;
+            margin-right: 10px;
+        }
+        .add-question-btn{
+            max-width: 300px;
+            justify-content: space-between;
+        }
+    </style>
 </head>
 <body>
-    <a href="{{ url_for('auth.back_to_dashboard') }}" class="back-button">Back to Dashboard</a>
 
     <div class="container">
         <div class="section">
+            <a href="{{ url_for('auth.back_to_dashboard') }}" class="back-button">Back to Dashboard</a>
+
             <h2>Question based Mapping</h2>
             <h3>Map the questions with the respective COs and define the marks.</h3>
 
@@ -77,6 +279,7 @@
             <!-- Form for mapping questions -->
             <form method="post" action="{{ url_for('user_routes.save_or_submit_assessment') }}">
                 <div class="add-question-btn">
+                    
                     <button id="addQuestionBtn" type="button">+ Add Question</button>
                 </div>
                 <input type="hidden" name="selected_subject_code" value="{{ selected_subject_code }}">
@@ -88,7 +291,7 @@
                     <!-- Questions will be dynamically added here -->
                 </div>
 
-                <div>
+                <div class="button-wrapper">
                     <button type="submit" name="action" value="save">Save</button>
                     <button type="submit" name="action" value="submit">Submit</button>
                 </div>
@@ -98,77 +301,97 @@
     </div>
 
     <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const addQuestionBtn = document.getElementById("addQuestionBtn");
-        const questionsContainer = document.querySelector(".questions-container");
-        let questionCounter = 0;
+document.addEventListener("DOMContentLoaded", function() {
+    const addQuestionBtn = document.getElementById("addQuestionBtn");
+    const questionsContainer = document.querySelector(".questions-container");
+    let questionCounter = 0;
 
-        function addQuestion() {
-            questionCounter++;
-            const questionWrapper = document.createElement("div");
-            questionWrapper.classList.add("question");
+    function addQuestion() {
+        questionCounter++;
+        const questionWrapper = document.createElement("div");
+        questionWrapper.classList.add("question");
 
-            const questionNumberInput = document.createElement("input");
-            questionNumberInput.type = "text";
-            questionNumberInput.readOnly = true;
-            questionNumberInput.value = `Question ${questionCounter}`;
-            questionNumberInput.classList.add("question-number");
+        const questionNumberDisplay = document.createElement("span");
+        questionNumberDisplay.classList.add("question-number");
+        questionNumberDisplay.textContent = `Question ${questionCounter}:`;
 
-            const maxMarksInput = document.createElement("input");
-            maxMarksInput.type = "text";
-            maxMarksInput.placeholder = "Max Marks";
-            maxMarksInput.name = `question${questionCounter}_maxMarks`; // Use indexed names
+        const questionNumberInput = document.createElement("input");
+        questionNumberInput.type = "hidden"; // Hidden input to track question number
+        questionNumberInput.name = `question${questionCounter}_number`; // Use indexed names
+        questionNumberInput.value = questionCounter;
 
-            const coDropdown = document.createElement("select");
-            coDropdown.name = `question${questionCounter}_co`; // Use indexed names
-            for (let i = 1; i <= 6; i++) {
-                const coOption = document.createElement("option");
-                coOption.value = `CO${i}`;
-                coOption.textContent = `CO${i}`;
-                coDropdown.appendChild(coOption);
-            }
+        const maxMarksInput = document.createElement("input");
+        maxMarksInput.type = "text";
+        maxMarksInput.placeholder = "Max Marks";
+        maxMarksInput.name = `question${questionCounter}_maxMarks`; // Use indexed names
 
-            const removeBtn = document.createElement("button");
-            removeBtn.type = "button";
-            removeBtn.textContent = "Remove";
-            removeBtn.classList.add("remove-question-btn");
-            removeBtn.addEventListener("click", function() {
-                questionsContainer.removeChild(questionWrapper);
-                questionCounter--;
-                updateQuestionNumbers();
-                updateQuestionCount(); // Update question count
-            });
-
-            questionWrapper.appendChild(questionNumberInput);
-            questionWrapper.appendChild(maxMarksInput);
-            questionWrapper.appendChild(coDropdown);
-            questionWrapper.appendChild(removeBtn);
-
-            questionsContainer.appendChild(questionWrapper);
-            updateQuestionCount(); // Update question count
+        const coDropdown = document.createElement("select");
+        coDropdown.name = `question${questionCounter}_co`; // Use indexed names
+        for (let i = 1; i <= 6; i++) {
+            const coOption = document.createElement("option");
+            coOption.value = `CO${i}`;
+            coOption.textContent = `CO${i}`;
+            coDropdown.appendChild(coOption);
         }
 
-        function updateQuestionNumbers() {
-            const questionNumbers = document.querySelectorAll(".question-number");
-            questionNumbers.forEach((number, index) => {
-                number.value = `Question ${index + 1}`;
-            });
-        }
-
-        function updateQuestionCount() {
-            document.getElementById("question_count").value = questionCounter; // Update hidden question count input
-        }
-
-        // Add initial questions
-        for (let i = 0; i < 10; i++) {
-            addQuestion();
-        }
-
-        addQuestionBtn.addEventListener("click", function() {
-            addQuestion();
+        const removeBtn = document.createElement("button");
+        removeBtn.type = "button";
+        removeBtn.textContent = "Remove";
+        removeBtn.classList.add("remove-question-btn");
+        removeBtn.addEventListener("click", function() {
+            questionsContainer.removeChild(questionWrapper);
+            questionCounter--;
+            updateQuestionNumbers(); // Update question numbers after removal
+            updateQuestionCount(); // Update hidden question count input
         });
+
+        questionWrapper.appendChild(questionNumberDisplay);
+        questionWrapper.appendChild(questionNumberInput);
+        questionWrapper.appendChild(maxMarksInput);
+        questionWrapper.appendChild(coDropdown);
+        questionWrapper.appendChild(removeBtn);
+
+        questionsContainer.appendChild(questionWrapper);
+        updateQuestionNumbers(); // Update question numbers after addition
+        updateQuestionCount(); // Update hidden question count input
+    }
+
+    function updateQuestionNumbers() {
+        const questionWrappers = document.querySelectorAll(".question");
+        questionWrappers.forEach((wrapper, index) => {
+            const questionNumberDisplay = wrapper.querySelector(".question-number");
+            questionNumberDisplay.textContent = `Question ${index + 1}:`;
+
+            const questionNumberInput = wrapper.querySelector("input[name$='_number']");
+            questionNumberInput.name = `question${index + 1}_number`; // Update the name with new index
+            questionNumberInput.value = index + 1;
+
+            const maxMarksInput = wrapper.querySelector("input[name$='_maxMarks']");
+            maxMarksInput.name = `question${index + 1}_maxMarks`; // Update the name with new index
+
+            const coDropdown = wrapper.querySelector("select[name$='_co']");
+            coDropdown.name = `question${index + 1}_co`; // Update the name with new index
+        });
+    }
+
+    function updateQuestionCount() {
+        document.getElementById("question_count").value = questionCounter; // Update hidden question count input
+    }
+
+    // Add initial questions
+    for (let i = 0; i < 10; i++) {
+        addQuestion();
+    }
+
+    addQuestionBtn.addEventListener("click", function() {
+        addQuestion();
     });
-    </script>
+
+    
+});
+
+
+        </script>
 
 </body>
 </html>

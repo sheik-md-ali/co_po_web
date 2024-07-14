@@ -5,13 +5,16 @@ from werkzeug.security import generate_password_hash
 from werkzeug.utils import secure_filename
 import sys
 sys.path.append('D:/co_po_web')
-from website.models import User, Subject, Section, Assessment, AssessmentInstance, IAComponent, College, SubjectList
+from website.models import User, Subject, Section, CoAttainment, Assessment, AssessmentInstance, IAComponent, College, SubjectList
 from io import BytesIO
 from PIL import Image
 import base64
+import json
+import pandas as pd
 from website import db
 from openpyxl import Workbook
 import io
+
 
 user_routes = Blueprint('user_routes', __name__)
 
@@ -126,6 +129,79 @@ def save_or_submit_assessment():
 
     return redirect(url_for('user_routes.mapping_for_assessment'))
 
+        
+@user_routes.route('/download/template.xlsx', methods=['GET'])
+@login_required
+def download_template():
+    selected_assessment_instance_id = request.args.get('assessment_instance_id')
+    
+    if not selected_assessment_instance_id:
+        flash('Please select an assessment instance.')
+        return redirect(url_for('user_routes.upload_excel'))
+
+    # Fetch assessment instance and associated mapping JSON
+    assessment_instance = AssessmentInstance.query.get(selected_assessment_instance_id)
+    if not assessment_instance:
+        flash('Invalid assessment instance ID.')
+        return redirect(url_for('user_routes.upload_excel'))
+    
+    mapping = assessment_instance.mapping_dictionary
+
+    # Fetch necessary details for the template
+    college = College.query.get(assessment_instance.college_id)
+    subject = SubjectList.query.get(assessment_instance.subject_id)
+    #user = User.query.get(subject.user_id)
+
+    # Create a new Excel workbook and select the active sheet
+    wb = Workbook()
+    sheet = wb.active
+    sheet.title = 'Assessment Template'
+
+    # Write header information
+    sheet['A1'] = college.name
+    sheet.merge_cells('A1:F1')
+
+    # Add Year, Branch, and Semester in the second row
+    sheet['A2'] = f"Year: {subject.year}  Branch: {subject.branch}  Semester: {subject.semester}"
+    sheet.merge_cells('A2:F2')
+
+    # Write subject code and subject name in the third row
+    sheet['A3'] = f"SUBJECT CODE : {subject.subject_code}                     | SUBJECT NAME: {subject.subject_name}"
+    sheet.merge_cells('A3:F3')
+
+    # Write COs and Max Marks headers in the fourth and fifth rows
+    sheet['C5'] = "CO's"
+    sheet['C6'] = 'MAX MARKS'
+
+    question_columns = list(mapping.keys())
+    
+    # Populate COs and Max Marks based on mapping
+    for index, question in enumerate(question_columns, start=2):
+        sheet.cell(row=5, column=index + 2).value = mapping[question].get('co', '')  # COs
+        sheet.cell(row=6, column=index + 2).value = mapping[question].get('maxMarks', '')  # Max Marks
+
+    # Write SNO, Student Name, REG NO, and Q1, Q2, ... headers in the seventh row
+    sheet['A7'] = 'SNO'
+    sheet['B7'] = 'STUDENT NAME'  # Add the Student Name column
+    sheet['C7'] = 'REG NO'
+
+    for index, _ in enumerate(question_columns, start=1):
+        sheet.cell(row=7, column=index + 3).value = f"Q{index}"
+
+    # Save workbook to a BytesIO object to send it as a downloadable file
+    excel_file = io.BytesIO()
+    wb.save(excel_file)
+    excel_file.seek(0)
+
+    return send_file(
+        excel_file,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name='assessment_template.xlsx'
+    )
+
+
+
 
 @user_routes.route('/user/upload_excel', methods=['GET', 'POST'])
 @login_required
@@ -211,75 +287,3 @@ def upload_excel_file():
             flash('Assessment file cannot be modified as it is already submitted.', 'danger')
             return redirect(url_for('user_routes.upload_excel'))
         
-        
-@user_routes.route('/download/template.xlsx', methods=['GET'])
-@login_required
-def download_template():
-    selected_assessment_instance_id = request.args.get('assessment_instance_id')
-    
-    if not selected_assessment_instance_id:
-        flash('Please select an assessment instance.')
-        return redirect(url_for('user_routes.upload_excel'))
-
-    # Fetch assessment instance and associated mapping JSON
-    assessment_instance = AssessmentInstance.query.get(selected_assessment_instance_id)
-    if not assessment_instance:
-        flash('Invalid assessment instance ID.')
-        return redirect(url_for('user_routes.upload_excel'))
-    
-    mapping = assessment_instance.mapping_dictionary
-
-    # Fetch necessary details for the template
-    college = College.query.get(assessment_instance.college_id)
-    subject = SubjectList.query.get(assessment_instance.subject_id)
-    #user = User.query.get(subject.user_id)
-
-    # Create a new Excel workbook and select the active sheet
-    wb = Workbook()
-    sheet = wb.active
-    sheet.title = 'Assessment Template'
-
-    # Write header information
-    sheet['A1'] = college.name
-    sheet.merge_cells('A1:F1')
-
-    # Add Year, Branch, and Semester in the second row
-    sheet['A2'] = f"Year: {subject.year}  Branch: {subject.branch}  Semester: {subject.semester}"
-    sheet.merge_cells('A2:F2')
-
-    # Write subject code and subject name in the third row
-    sheet['A3'] = f"SUBJECT CODE : {subject.subject_code}                     | SUBJECT NAME: {subject.subject_name}"
-    sheet.merge_cells('A3:F3')
-
-    # Write COs and Max Marks headers in the fourth and fifth rows
-    sheet['B5'] = "CO's"
-    sheet['B6'] = 'MAX MARKS'
-
-    question_columns = list(mapping.keys())
-    
-    # Populate COs and Max Marks based on mapping
-    for index, question in enumerate(question_columns, start=2):
-        sheet.cell(row=5, column=index + 1).value = mapping[question].get('co', '')  # COs
-        sheet.cell(row=6, column=index + 1).value = mapping[question].get('maxMarks', '')  # Max Marks
-
-    # Write SNO, REG NO, and Q1, Q2, ... headers in the seventh row
-    sheet['A7'] = 'SNO'
-    sheet['B7'] = 'REG NO'
-
-    for index, _ in enumerate(question_columns, start=1):
-        sheet.cell(row=7, column=index + 2).value = f"Q{index}"
-
-    # Save workbook to a BytesIO object to send it as a downloadable file
-    excel_file = io.BytesIO()
-    wb.save(excel_file)
-    excel_file.seek(0)
-
-    return send_file(
-        excel_file,
-        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        as_attachment=True,
-        download_name='assessment_template.xlsx'
-    )
-
-
- 

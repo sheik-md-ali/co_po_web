@@ -1,177 +1,169 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>dashboard</title>
+
+<head>
+    <title>Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/user/user_dashboard.css') }}" />
-  </head>
-  <body>
-      <header class="header">
-  <div class="header-content responsive-wrapper">
-    <div class="header-logo">
-      <a href="#">
-        <div>
-          <img src="https://assets.codepe.io/285131/untitled-ui-icon.svg" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<body>
+  <header class="header">
+    <div class="header-content responsive-wrapper">
+        <div class="header-logo">
+            <a href="#">
+                <img src="https://assets.codepen.io/285131/untitled-ui-icon.svg" />
+                <img src="https://assets.codepen.io/285131/untitled-ui.svg" class="logo-text" />
+            </a>
         </div>
-        <img src="https://assets.codepen.io/285131/untitled-ui.svg" />
-      </a>
-    </div>
-    <div class="header-navigation">
-      <nav class="header-navigation-links">
-        <a href="{{ url_for('views.index') }}"> Home </a>
-        <a href="#"> Dashboard </a>
-        <a href="#"> calculate </a>
-        <a href="#"> Tasks </a>
-        <a href="#"> Contact Us </a>
-        <a href="#"> Team </a>
-      </nav>
-      
-      <div class="header-navigation-actions">
-        <a href="{{ url_for('auth.logout') }}" class="button">
-          <i class="ph-lightning-bold"></i>
-          <span>Logout</span>
+        <div class="header-navigation">
+            <p class="custom-p">Name</p>
+            <a href="{{ url_for('auth.logout') }}" class="button">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+        <a href="#" class="button menu-button">
+            <i class="fas fa-bars"></i>
+            <span>Menu</span>
         </a>
-        <p class="custom-p">name</p>
-        <a href="#" class="avatar">
-          <img src="https://assets.codepen.io/285131/hat-man.png" alt="" />
-        </a>
-      </div>
     </div>
-    <a href="#" class="button">
-      <i class="ph-list-bold"></i>
-      <span>Menu</span>
-    </a>
-  </div>
 </header>
-<main class="main">
-  <div class="responsive-wrapper">
-    
-    <div class="content-header">
-        <div class="content-header-intro">
-            <h2>CO-PO Integration</h2>
-            <p>Enhance your assessment process and align Course Outcomes with Program Outcomes effortlessly.</p>
-        </div>        
-      <div class="content-header-actions">
-        <a href="#" class="button">
-          <i class="ph-faders-bold"></i>
-          <span>Filters</span>
-        </a>
-        <a href="{{url_for('user_routes.user_subjects')}}" class="button">
-          <i class="ph-plus-bold"></i>
-          <span>My subjects</span>
-        </a>
-      </div>
-    </div>
-    <div class="content">
-        <div class="content-panel">
-            <div class="vertical-tabs">
-                <a href="#" class="active">Menu</a>
-                <a href="#">Profile</a>
-                <a href="#">information</a>
-                <a href="#">User Guide</a>
-                <a href="#">Request changes</a>
-                <a href="#">Integration Methods</a>
-                <a href="#">Best Practices</a>
-                <a href="#">Case Studies</a>
-                <a href="#">FAQs</a>
-                <a href="#">Updates & News</a>
+
+    <main class="main">
+        <div class="responsive-wrapper">
+            <div class="content-header">
+                <div class="content-header-intro">
+                    <h2>CO-PO Integration</h2>
+                    <p>Enhance your assessment process and align Course Outcomes with Program Outcomes
+                        effortlessly.</p>
+                </div>
+                <div class="content-header-actions">
+                    <a href="{{ url_for('user_routes.user_subjects') }}" class="button">
+                        <i class="fas fa-book"></i>
+                        <span>My subjects</span>
+                    </a>
+                </div>
             </div>
-        </div>        
-      <div class="content-main">
-        <div class="card-grid">
-          <article class="card">
-            <div class="card-header">
-              <div>
-                <span><img src="{{ url_for('static', filename='images/ut.jpeg') }}" />
-                </span>
-                <h3>No of assessment</h3>
-              </div>
-              
+            <div class="content">
+                <div class="content-panel">
+                    <div class="vertical-tabs">
+                        <a href="#" class="active">Menu</a>
+                        <a href="#">Profile</a>
+                        <a href="#">Information</a>
+                        <a href="#">User Guide</a>
+                        <a href="#">Request changes</a>
+                        <a href="#">Integration Methods</a>
+                        <a href="#">Best Practices</a>
+                        <a href="#">Case Studies</a>
+                        <a href="#">FAQs</a>
+                        <a href="#">Updates & News</a>
+                    </div>
+                </div>
+                <div class="content-main">
+                    <div class="card-grid">
+                        <article class="card">
+                            <div class="card-header">
+                                <div>
+                                    <span><img src="{{ url_for('static', filename='images/ut.jpeg') }}" />
+                                    </span>
+                                    <h3>No of assessment</h3>
+                                </div>
+
+                            </div>
+                            <div class="card-body">
+                                <p>Check the No of assessments exist</p>
+                            </div>
+                            <div class="card-footer">
+                                <a href="#">Click here</a>
+                            </div>
+                        </article>
+                        <article class="card">
+                            <div class="card-header">
+                                <div>
+                                    <span><img src="{{ url_for('static', filename='images/model.jpeg') }}" /></span>
+                                    <h3>Mapping</h3>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <p>Enter your question paper pattern.</p>
+                            </div>
+                            <div class="card-footer">
+                                <a href="{{ url_for('user_routes.mapping_for_assessment') }}">Click here</a>
+                            </div>
+                        </article>
+                        <article class="card">
+                            <div class="card-header">
+                                <div>
+                                    <span><img src="{{ url_for('static', filename='images/assignment.jpeg') }}" /></span>
+                                    <h3>Assignment upload</h3>
+                                </div>
+
+                            </div>
+                            <div class="card-body">
+                                <p>Upload the assessment files.</p>
+                            </div>
+                            <div class="card-footer">
+                                <a href="{{ url_for('user_routes.upload_excel') }}">Click here</a>
+                            </div>
+                        </article>
+                        <article class="card">
+                            <div class="card-header">
+                                <div>
+                                    <span><img src="{{ url_for('static', filename='images/co.jpeg') }}" /></span>
+                                    <h3>Calculate CO</h3>
+                                </div>
+
+                            </div>
+                            <div class="card-body">
+                                <p>Automate calculations for Course Outcomes.</p>
+                            </div>
+                            <div class="card-footer">
+                                <a href="#">Click here</a>
+                            </div>
+                        </article>
+                        <article class="card">
+                            <div class="card-header">
+                                <div>
+                                    <span><img src="{{ url_for('static', filename='images/po.jpeg') }}" /></span>
+                                    <h3>Get PSO</h3>
+                                </div>
+
+                            </div>
+                            <div class="card-body">
+                                <p>Retrieve Program Outcomes for analysis.</p>
+                            </div>
+                            <div class="card-footer">
+                                <a href="#">Click here</a>
+                            </div>
+                        </article>
+                        <article class="card">
+                            <div class="card-header">
+                                <div>
+                                    <span><img src="{{ url_for('static', filename='images/co-po.jpeg') }}" /></span>
+                                    <h3>View CO-PO</h3>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <p>Visualize the relationship between CO and PO</p>
+                            </div>
+                            <div class="card-footer">
+                                <a href="#">Click here</a>
+                            </div>
+                        </article>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-              <p>Check the No of assessments exist</p>
-            </div>
-            <div class="card-footer">
-              <a href="#">Click here</a>
-            </div>
-          </article>
-          <article class="card">
-            <div class="card-header">
-              <div>
-                <span><img src="{{ url_for('static', filename='images/model.jpeg') }}" /></span>
-                <h3>Mapping</h3>
-              </div>
-            </div>
-            <div class="card-body">
-              <p>Enter your question paper pattern.</p>
-            </div>
-            <div class="card-footer">
-              <a href="{{ url_for('user_routes.mapping_for_assessment') }}">Click here</a>
-            </div>
-          </article>
-          <article class="card">
-            <div class="card-header">
-              <div>
-                <span><img src="{{ url_for('static', filename='images/assignment.jpeg') }}" /></span>
-                <h3>Assignment upload</h3>
-              </div>
-              
-            </div>
-            <div class="card-body">
-              <p>Upload the assessment files.</p>
-            </div>
-            <div class="card-footer">
-              <a href="{{ url_for('user_routes.upload_excel') }}">Click here</a>
-            </div>
-          </article>
-          <article class="card">
-            <div class="card-header">
-              <div>
-                <span><img src="{{ url_for('static', filename='images/co.jpeg') }}" /></span>
-                <h3>Calculate CO</h3>
-              </div>
-              
-            </div>
-            <div class="card-body">
-              <p>Automate calculations for Course Outcomes.</p>
-            </div>
-            <div class="card-footer">
-              <a href="#">Click here</a>
-            </div>
-          </article>
-          <article class="card">
-            <div class="card-header">
-              <div>
-                <span><img src="{{ url_for('static', filename='images/po.jpeg') }}" /></span>
-                <h3>Get PSO</h3>
-              </div>
-              
-            </div>
-            <div class="card-body">
-              <p>Retrieve Program Outcomes for analysis.</p>
-            </div>
-            <div class="card-footer">
-              <a href="#">Click here</a>
-            </div>
-          </article>
-          <article class="card">
-            <div class="card-header">
-              <div>
-                <span><img src="{{ url_for('static', filename='images/co-po.jpeg') }}" /></span>
-                <h3>View CO-PO</h3>
-              </div>  
-            </div>
-            <div class="card-body">
-              <p>Visualize the relationship between CO and PO</p>
-            </div>
-            <div class="card-footer">
-              <a href="#">Click here</a>
-            </div>
-          </article>
         </div>
-      </div>
-    </div>
-  </div>
-</main>
-  </body>
+    </main>
+    <script>
+       document.querySelector('.menu-button').addEventListener('click', function () {
+    document.querySelector('.content-panel').classList.toggle('active');
+});
+
+    </script>
+</body>
+
 </html>

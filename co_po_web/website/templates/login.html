@@ -1,151 +1,328 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
+
 <head>
-    <meta charset="UTF-8">
-    <title>Login</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../static/css/login.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.6.2/css/bootstrap.min.css">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" />
     <style>
-        /* Custom CSS for login form */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
             margin: 0;
-            padding: 0;
+            line-height: normal;
         }
 
-        .login-form {
-            max-width: 400px;
-            margin: 50px auto;
-            background-color: #fff;
-            border-radius: 10px;
-            padding: 30px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        :root {
+            /* fonts */
+            --font-montserrat: Montserrat;
+
+            /* font sizes */
+            --font-size-smi: 13px;
+            --font-size-5xl: 24px;
+            --font-size-lgi: 19px;
+
+            /* Colors */
+            --color-white: #fff;
+            --color-orange: #ff8c00;
+            --color-silver: #ffc59f99;
+            --color-light-gray: #f5f5f5;
+            --color-dark-gray: #ca2c01;
+
+            /* Gaps */
+            --gap-5xl: 24px;
+            --gap-5xs: 8px;
+
+            /* Paddings */
+            --padding-xl: 20px;
+            --padding-6xs: 7px;
+            --padding-mini: 15px;
+            --padding-base: 16px;
+
+            /* Border radiuses */
+            --br-9xl-5: 28.5px;
+            --br-8xs: 5px;
         }
 
-        .login-form .text {
-            text-align: center;
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            color: #333;
+        body {
+            font-family: var(--font-montserrat);
         }
 
-        .login-form .form {
-            margin-top: 20px;
-        }
+        /* Styles for .glass-effect-login-page-white */
+    .glass-effect-login-page-white {
+        background: radial-gradient(50% 50% at 50% 50%, var(--color-orange) 0%, var(--color-dark-gray) 100%);
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        box-sizing: border-box;
+        justify-content: center;
+        padding: 110px var(--padding-xl);
+        line-height: normal;
+        letter-spacing: normal;
+        width: 100%;
+        height: 100vh; /* Ensure it covers the full viewport height */
+        position: relative;
+    }
 
-        .login-form .field {
-            position: relative;
-            margin-bottom: 20px;
-        }
 
-        .login-form .field input {
-            width: calc(100% - 40px);
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            outline: none;
-            margin-left: 40px;
+        .new {
             font-size: 16px;
+            margin-top: 10px;
+            text-align: center;
         }
 
-        .login-form .field .fas {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            left: 10px;
-            color: #666;
-        }
-
-        .login-form button {
+        .glass-effect-login-page-white1 {
             width: 100%;
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            padding: 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            font-size: 16px;
+            max-width: 300px;
+            box-shadow: 0px 4px 30px rgba(0, 0, 0, 0.1);
+            border-radius: 24px;
+            padding: 40px;
+            background-color: var(--color-white);
+            text-align: left;
+            color: var(--color-dark-gray);
+            font-family: var(--font-montserrat);
         }
 
-        .login-form button:hover {
-            background-color: #0056b3;
+        .group-icon {
+            height: 10px;
+            margin-bottom: 30px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        .login-form .link {
+        .info-parent {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            box-sizing: border-box;
+            gap: var(--gap-5xl);
+        }
+
+        .login {
             text-align: center;
-            margin-top: 20px;
+            margin-bottom: 20px;
         }
 
-        .login-form .link a {
-            color: #007bff;
-            text-decoration: none;
-            font-size: 14px;
+        .copo-calculator {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
         }
 
-        .login-form .link a:hover {
-            text-decoration: underline;
+        .credentials {
+            gap: var(--gap-5xl);
+        }
+
+        .login {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            gap: var(--gap-5xs);
+        }
+
+        .user-id-parent {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+
+        .user-id {
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .user-i-d-example {
+            border-radius: var(--br-8xs);
+            background-color: var(--color-light-gray);
+            border: 1px solid var(--color-silver);
+            overflow: hidden;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            padding: 0 var(--padding-mini);
+            height: 40px;
+        }
+
+        .useridgmailcom {
+            width: 100%;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-family: var(--font-montserrat);
+            font-size: var(--font-size-smi);
+            color: var(--color-dark-gray);
+            height: 100%;
+        }
+
+        .password-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .password {
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .password-parent {
+            border-radius: var(--br-8xs);
+            background-color: var(--color-light-gray);
+            border: 1px solid var(--color-silver);
+            overflow: hidden;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            padding: 0 var(--padding-mini);
+            height: 40px;
+        }
+
+        .password1 {
+            width: 100%;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-family: var(--font-montserrat);
+            font-size: var(--font-size-smi);
+            color: var(--color-dark-gray);
+            height: 100%;
+        }
+
+        .visibility-icon {
+            margin-left: 10px;
+        }
+
+        .sign-in-wrapper {
+            cursor: pointer;
+            border: none;
+            padding: 10px var(--padding-xl);
+            background-color: var(--color-orange);
+            border-radius: 7.11px;
+            text-align: center;
+            color: var(--color-white);
+            margin-top: 25px;
+            font-size: 16px;
+            font-weight: 700;
+            display: block;
+            width: 100%;
+        }
+
+        .sign-in-wrapper:hover {
+            background-color: darkorange;
         }
 
         .flash-message {
             padding: 10px;
-            border-radius: 5px;
             margin-bottom: 10px;
-            color: #fff;
-        }
-
-        .flash-success {
-            background-color: #28a745;
+            border-radius: 5px;
         }
 
         .flash-error {
-            background-color: #dc3545;
+            background-color: #f8d7da;
+            color: #721c24;
         }
-        
-        /* Responsive adjustments */
+
+        .flash-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
         @media (max-width: 768px) {
-            .login-form {
-                margin-top: 20px;
-                box-shadow: none;
+            .glass-effect-login-page-white {
+                padding: 80px var(--padding-base);
+            }
+
+            .glass-effect-login-page-white1 {
+                padding: 30px;
+            }
+
+            .copo-calculator {
+                font-size: var(--font-size-lgi);
+            }
+
+            .sign-in-wrapper {
+                font-size: var(--font-size-smi);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .glass-effect-login-page-white {
+                padding: 60px var(--padding-6xs);
+            }
+
+            .glass-effect-login-page-white1 {
+                padding: 20px;
+            }
+
+            .copo-calculator {
+                font-size: var(--font-size-5xl);
+            }
+
+            .sign-in-wrapper {
+                padding: 8px var(--padding-base);
             }
         }
     </style>
 </head>
+
 <body>
-<div class="login-form">
-    <div class="text">LOGIN</div>
-    <!-- Display flashed messages from login route only -->
-    <div id="flash-messages">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
+
+    <div class="glass-effect-login-page-white">
+        <main class="glass-effect-login-page-white1">
+            <div class="group-wrapper">
+                <img class="group-icon" alt="" src="./public/group.svg" />
+            </div>
+            <div class="info-parent">
+                <div class="info">
+                    <h2 class="login">LOGIN</h2>
+                </div>
+                <div id="flash-messages">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                    {% for category, message in messages %}
                     {% if category == 'error' or category == 'success' %}
-                        <div class="flash-message flash-{{ category }}">
-                            {{ message }}
-                        </div>
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
                     {% endif %}
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-    </div>
-    <form action="/login" method="POST" class="form">
-        <div class="field">
-            <div class="fas fa-envelope"></div>
-            <input type="text" placeholder="Email" name="email">
-        </div>
-        <div class="field">
-            <div class="fas fa-lock"></div>
-            <input type="password" placeholder="Password" name="password">
-        </div>
-        <button type="submit">LOGIN</button>
-        <div class="link">
-            Not a User? <a href="#">Register</a>
-        </div>
-    </form>
-</div>
-</body>
-</html>
+                    {% endfor %}
+                    {% endif %}
+                    {% endwith %}
+                </div>
+                <div class="credentials">
+                    <form action="/login" method="POST" class="form">
+                        <div class="user-info">
+                            <div class="user-id-parent">
+                                <b class="user-id">User ID</b>
+                                <div class="user-i-d-example">
+                                    <input class="useridgmailcom" placeholder="userid@gmail.com" type="text" name="email"
+                                        required />
+                                </div>
+                            </div>
+                            <div class="password-info">
+                                <b class="password">Password</b>
+                                <div class="password-parent">
+                                    <input class="password1" type="password" placeholder="Password" name="password"
+                                        required />
+                                    <div class="visibility-icon">
+                                        <img class="clarityeye-hide-line-icon" loading="lazy" alt=""
+                                            src="./public/clarityeyehideline.svg" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="sign-in-wrapper" type="submit">
+                            <b class="sign-in">Sign in</b>
+                        </button>
+                    </form>
+                </div>
+            </div>
+       

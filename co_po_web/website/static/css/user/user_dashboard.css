@@ -95,6 +95,15 @@ img {
     display: none;
   }
 }
+.header-navigation {
+  /* Ensure these are visible in smaller screens */
+  @media (max-width: 800px) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
 
 .header-navigation-links {
   display: flex;
@@ -329,12 +338,16 @@ img {
 }
 
 .content-header-actions {
-  a:first-child {
-    @media (min-width: 800px) {
-      display: none;
+  /* Adjust styles for larger screens */
+  @media (min-width: 800px) {
+    display: flex;
+    align-items: center;
+    a:first-child {
+      display: inline-flex; /* Ensure the link is visible */
     }
   }
 }
+
 
 .content {
   border-top: 1px solid var(--c-border-primary);
@@ -369,7 +382,7 @@ img {
     &:hover,
     &:focus,
     &.active {
-      background-color: var(--c-background-tertiary);
+      background-color: var(--c-background-tertiary);    
       color: var(--c-accent-primary);
     }
 
@@ -398,15 +411,22 @@ img {
     grid-template-columns: repeat(3, 1fr);
   }
 }
-
 .card {
-  background-color: var(--c-background-primary);
-  
-  box-shadow: 0 3px 3px 0 rgba(#000, 0.05), 0 5px 15px 0 rgba(#000, 0.05);
-  border-radius: 8px;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  background: var(--c-background-primary);
+  border: 1px solid var(--c-border-primary);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  transition: 0.15s ease;
+  box-shadow: var(--c-box-shadow);
+}
+
+.card:hover,
+.card:focus-within {
+  border-color: var(--c-accent-primary);
+  box-shadow: rgba(0, 0, 0, 0.15) 0px 8px 16px;
 }
 
 .card-header {
@@ -475,4 +495,24 @@ html {
 
 .custom-p {
   padding: 10px;
+}
+
+/* Mobile view adjustments */
+@media (max-width: 1200px) {
+    .header-content {
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .header-navigation {
+        display: none; /* Hide logout link by default */
+    }
+
+    .menu-button {
+        display: inline-flex; /* Ensure menu button is always visible */
+    }
+
+    .content-panel.active {
+        display: block; /* Show content panel when active */
+    }
 }

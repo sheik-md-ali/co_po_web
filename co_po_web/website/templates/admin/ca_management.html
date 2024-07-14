@@ -259,13 +259,21 @@
         <input type="hidden" name="section" value="{{ selected_section_id }}">
         <div>
             <label for="existing_cia">Existing CIA:</label>
-            <select id="existing_cia" name="existing_cia" onchange="updateCiaFields()" >
+            <select id="existing_cia" name="existing_cia" onchange="updateCiaFields()">
                 <option value="">Select Existing CIA</option>
+                {% set practical_added = false %}
                 {% for ia_component in ia_components %}
-                    <option value="{{ ia_component.name }}" data-cia-weightage="{{ ia_component.weightage }}">
-                        {{ ia_component.name }}
-                    </option>
+                    {% if ia_component.name != 'Practical' %}
+                        <option value="{{ ia_component.name }}" data-cia-weightage="{{ ia_component.weightage }}">
+                            {{ ia_component.name }}
+                        </option>
+                    {% else %}
+                        {% set practical_added = true %}
+                    {% endif %}
                 {% endfor %}
+                {% if not practical_added %}
+                    <option value="Practical" data-cia-weightage="100">Practical</option>
+                {% endif %}
             </select>
         </div>
         <div>
@@ -371,14 +379,20 @@
         });
 
         function updateCiaFields() {
-            var select = document.getElementById('existing_cia');
-            var selectedOption = select.options[select.selectedIndex];
-            var ciaName = selectedOption.value;
+            var selectElement = document.getElementById('existing_cia');
+            var selectedOption = selectElement.options[selectElement.selectedIndex];
             var ciaWeightage = selectedOption.getAttribute('data-cia-weightage');
-            
-            if (ciaName && ciaWeightage) {
-                document.getElementById('cia_name').value = ciaName;
+
+            if (selectedOption.value === 'Practical') {
+                document.getElementById('cia_name').value = 'Practical';
+                document.getElementById('cia_name').readOnly = true;
+                document.getElementById('cia_weightage').value = 100;
+                document.getElementById('cia_weightage').readOnly = true;
+            } else {
+                document.getElementById('cia_name').value = selectedOption.value;
+                document.getElementById('cia_name').readOnly = false;
                 document.getElementById('cia_weightage').value = ciaWeightage;
+                document.getElementById('cia_weightage').readOnly = false;
             }
         }
 

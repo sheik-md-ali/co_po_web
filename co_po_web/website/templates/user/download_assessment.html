@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Download Assessment Excel File</title>
+    <style>
+        /* Add your styles here */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="section">
+            <a href="{{ url_for('auth.back_to_dashboard') }}" class="back-button">Back to Dashboard</a>
+
+            <h2>Download Assessment Excel File</h2>
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            <div>
+                {% for message in messages %}
+                <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            <!-- Form for selecting Subject, Section, and Assessment Instance -->
+            <form method="post" action="{{ url_for('user_routes.download_assessment') }}">
+                <div>
+                    <label for="subjectCode">Subject Code:</label>
+                    <select id="subjectCode" name="subject_code" onchange="this.form.submit()">
+                        <option value="">Select Subject</option>
+                        {% for subject in subjects %}
+                            <option value="{{ subject }}" {% if selected_subject_code == subject %}selected{% endif %}>{{ subject }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                {% if sections %}
+                <div>
+                    <label for="section">Section:</label>
+                    <select id="section" name="section" onchange="this.form.submit()">
+                        <option value="">Select Section</option>
+                        {% for section in sections %}
+                        <option value="{{ section.name }}" {% if selected_section_name == section.name %}selected{% endif %}>
+                            {{ section.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+                
+                {% if assessment_instances %}
+                <div>
+                    <label for="assessmentInstance">Assessment Instance:</label>
+                    <select id="assessmentInstance" name="assessment_instance" onchange="this.form.submit()">
+                        <option value="">Select Assessment Instance</option>
+                        {% for instance in assessment_instances %}
+                        <option value="{{ instance.id }}" {% if selected_assessment_instance_id == instance.id %}selected{% endif %}>
+                            {{ instance.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+            </form>
+
+            {% if selected_subject_code and selected_section_name and not assessment_instances %}
+            <p>No assessments exist for the selected subject and section.</p>
+            {% endif %}
+
+            {% if selected_subject_code and selected_section_name and selected_assessment_instance_id %}
+            <form method="post" action="{{ url_for('user_routes.download_assessment') }}">
+                <input type="hidden" name="subject_code" value="{{ selected_subject_code }}">
+                <input type="hidden" name="section" value="{{ selected_section_name }}">
+                <input type="hidden" name="assessment_instance" value="{{ selected_assessment_instance_id }}">
+                <div>
+                    <button type="submit">Download Excel</button>
+                </div>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

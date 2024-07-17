@@ -3,8 +3,141 @@
 <head>
     <meta charset="UTF-8">
     <title>Download Assessment Excel File</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <style>
-        /* Add your styles here */
+        /* General Styles */
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        h2, h3 {
+            color: #333;
+        }
+
+        a.back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background-color: #185494;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        a.back-button:hover {
+            background-color: rgb(19, 47, 77);
+        }
+
+        /* Form Styles */
+        form div {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        select, input[type="text"], input[type="file"], button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background: linear-gradient(to right, #007bff, #0056b3);
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background: linear-gradient(to right, #0056b3, #003c80);
+        }
+
+        .save-submit-buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .save-submit-buttons button {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .save-submit-buttons {
+                flex-direction: column;
+            }
+
+            .save-submit-buttons button {
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+
+            a.back-button {
+                padding: 8px 16px;
+            }
+
+            form div {
+                margin-bottom: 15px;
+            }
+
+            h2, h3 {
+                font-size: 1.5em;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+
+        .template-download {
+            margin-top: 20px;
+        }
+
+        .template-download a {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .template-download a:hover {
+            background-color: #218838;
+        }
     </style>
 </head>
 <body>
@@ -70,15 +203,18 @@
             <p>No assessments exist for the selected subject and section.</p>
             {% endif %}
 
-            {% if selected_subject_code and selected_section_name and selected_assessment_instance_id %}
-            <form method="post" action="{{ url_for('user_routes.download_assessment') }}">
-                <input type="hidden" name="subject_code" value="{{ selected_subject_code }}">
-                <input type="hidden" name="section" value="{{ selected_section_name }}">
-                <input type="hidden" name="assessment_instance" value="{{ selected_assessment_instance_id }}">
-                <div>
-                    <button type="submit">Download Excel</button>
-                </div>
-            </form>
+            {% if assessment_details %}
+            <div>
+                <h3>Assessment Details</h3>
+                <p><strong>Name:</strong> {{ assessment_details.name }}</p>
+                <p><strong>Max Marks:</strong> {{ assessment_details.max_marks }}</p>
+                <form method="post" action="{{ url_for('user_routes.download_assessment') }}">
+                    <input type="hidden" name="subject_code" value="{{ selected_subject_code }}">
+                    <input type="hidden" name="section" value="{{ selected_section_name }}">
+                    <input type="hidden" name="assessment_instance" value="{{ selected_assessment_instance_id }}">
+                    <button type="submit" name="download">Download Excel</button>
+                </form>
+            </div>
             {% endif %}
         </div>
     </div>

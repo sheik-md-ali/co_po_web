@@ -179,6 +179,7 @@ class CoAttainment(db.Model):
     subject_code = db.Column(db.String(100), nullable=False)
     total_students = db.Column(db.Integer, nullable=False)
     batch = db.Column(db.String(100), nullable=False)
+    target_perc =db.Column(db.Integer, nullable=False)
     co_data = db.Column(db.JSON, nullable=False)
     loa_data = db.Column(db.JSON, nullable=False)
     practical_component = db.Column(db.String(10), nullable=False)
@@ -195,5 +196,22 @@ class CoAttainment(db.Model):
     practicalCourseExitSurveyPercentage = db.Column(db.Float, nullable=False)
     copo_mappings = db.Column(db.JSON, nullable=False)  
     pso_mappings = db.Column(db.JSON, nullable=False)  
+    
 
     college = db.relationship('College', backref=db.backref('co_attainments', lazy=True))
+
+
+# New InternalAssessment Model
+class InternalAssessment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    college_id = db.Column(db.Integer, db.ForeignKey('college.id'), nullable=False)
+    subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)
+    section_id = db.Column(db.Integer, db.ForeignKey('section.id'), nullable=False)
+    assessment_instance_ids = db.Column(db.JSON, nullable=False)
+
+    college = db.relationship('College', backref=db.backref('internal_assessments', lazy=True))
+    subject = db.relationship('Subject', backref=db.backref('internal_assessments', lazy=True))
+    section = db.relationship('Section', backref=db.backref('internal_assessments', lazy=True))
+
+    def __repr__(self):
+        return f"InternalAssessment(college_id={self.college_id}, subject_id={self.subject_id}, section_id={self.section_id})"

@@ -3,7 +3,7 @@ from flask_login import login_required
 from werkzeug.security import generate_password_hash
 import sys
 sys.path.append('D:/co_po_web')
-from website.models import User, Assessment,IAComponent, Section, College, CollegeStaff, SubjectList, Subject, AssessmentInstance, CoAttainment
+from website.models import User, Assessment, IAComponent, InternalAssessment, Section, College, CollegeStaff, SubjectList, Subject, AssessmentInstance, CoAttainment
 from io import BytesIO
 from PIL import Image
 import base64
@@ -451,6 +451,7 @@ def co_attainment_submit():
         if selected_college_id and selected_subject_code:
             total_students = request.form.get('totalStudents')
             batch = request.form.get('batch')
+            target_perc = request.form.get('target_perc')
             practical_component = request.form.get('practicalComponent')
 
             # Theory and Internal Assessment fields
@@ -520,6 +521,7 @@ def co_attainment_submit():
                 subject_code=selected_subject_code,
                 total_students=total_students,
                 batch=batch,
+                target_perc=target_perc,
                 co_data=cos,
                 loa_data=loa_data,
                 practical_component=practical_component,
@@ -548,3 +550,83 @@ def co_attainment_submit():
         flash(f'Error saving CO attainment data: {str(e)}', 'danger')
 
     return redirect(url_for('admin_routes.co_attainment'))
+
+
+
+@admin_routes.route('/admin/internal_assessment_management', methods=['GET', 'POST'])
+@login_required
+def internal_assessment_management():
+    colleges = College.query.all()
+    subjects = []
+    sections = []
+    assessment_instances = []
+    existing_assessment_instances = []
+    selected_college_id = request.form.get('college') or request.args.get('college')
+    selected_subject_id = request.form.get('subject') or request.args.get('subject')
+    selected_section_id = request.form.get('section') or request.args.get('section')
+    selected_assessment_instance_ids = []
+
+    if selected_college_id:
+        subjects = SubjectList.query.filter_by(college_id=selected_college_id).all()
+
+    if selected_subject_id:
+        subject = SubjectList.query.filter_by(id=selected_subject_id).first()
+        if subject:
+            sections = Section.query.filter_by(subject_code=subject.subject_code).all()
+
+    if selected_section_id:
+        # Fetch all assessment instances for the selected subject code and section
+        assessment_instances = AssessmentInstance.query.filter_by(
+            college_id=selected_college_id,
+            subject_id=selected_subject_id,
+            section_id=selected_section_id
+        ).all()
+
+        # Fetch existing internal assessments for the selected subject and section
+        internal_assessment = InternalAssessment.query.filter_by(
+            college_id=selected_college_id,
+            subject_id=selected_subject_id,
+            section_id=selected_section_id
+        ).first()
+
+        if internal_assessment:
+            existing_assessment_instance_ids = internal_assessment.assessment_instance_ids
+            existing_assessment_instances = AssessmentInstance.query.filter(
+                AssessmentInstance.id.in_(existing_assessment_instance_ids)
+            ).all()
+
+    if request.method == 'POST':
+        if 'submit_internal_assessment' in request.form:
+            selected_assessment_instance_ids = request.form.getlist('assessment_instance_ids')
+
+            if not internal_assessment:
+                internal_assessment = InternalAssessment(
+                    college_id=selected_college_id,
+                    subject_id=selected_subject_id,
+                    section_id=selected_section_id,
+                    assessment_instance_ids=selected_assessment_instance_ids
+                )
+                db.session.add(internal_assessment)
+            else:
+                internal_assessment.assessment_instance_ids = selected_assessment_instance_ids
+
+            db.session.commit()
+            flash('Internal Assessment updated successfully.', 'success')
+            return redirect(url_for('admin_routes.internal_assessment_management'))
+
+    # Flash messages for specific scenarios
+    if selected_section_id and not assessment_instances:
+        flash('No assessments exist for this section.', 'info')
+
+    return render_template(
+        'admin/internal_assessment_management.html',
+        colleges=colleges,
+        subjects=subjects,
+        sections=sections,
+        assessment_instances=assessment_instances,
+        existing_assessment_instances=existing_assessment_instances,
+        selected_college_id=selected_college_id,
+        selected_subject_id=selected_subject_id,
+        selected_section_id=selected_section_id,
+        selected_assessment_instance_ids=selected_assessment_instance_ids
+    )

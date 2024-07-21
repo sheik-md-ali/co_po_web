@@ -113,7 +113,7 @@
                             <div class="card-header">
                                 <div>
                                     <span><img src="{{ url_for('static', filename='images/co.jpeg') }}" /></span>
-                                    <h3>Calculated CO</h3>
+                                    <h3>Assessment CO</h3>
                                 </div>
 
                             </div>
@@ -128,15 +128,15 @@
                             <div class="card-header">
                                 <div>
                                     <span><img src="{{ url_for('static', filename='images/po.jpeg') }}" /></span>
-                                    <h3>Get PSO</h3>
+                                    <h3>Internal Co</h3>
                                 </div>
 
                             </div>
                             <div class="card-body">
-                                <p>Retrieve Program Outcomes for analysis.</p>
+                                <p>Retrieve course Outcomes for analysis.</p>
                             </div>
                             <div class="card-footer">
-                                <a href="#">Click here</a>
+                                <a href="{{ url_for('user_routes.internal_assessment_co') }}">Click here</a>
                             </div>
                         </article>
                         <article class="card">

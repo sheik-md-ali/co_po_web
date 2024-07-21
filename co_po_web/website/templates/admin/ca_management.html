@@ -205,17 +205,18 @@
 <body>
     <a href="{{ url_for('auth.back_to_dashboard') }}" class="back-button">Back to Dashboard</a>
     <h1>Continuous Assessment Management</h1>
-    <!-- Flash Messages -->
-    {% with messages = get_flashed_messages() %}
-    {% if messages %}
-    <div>
-        {% for message in messages %}
-        <p>{{ message }}</p>
-        {% endfor %}
-    </div>
-    {% endif %}
-    {% endwith %}
+    
     <form method="POST" action="{{ url_for('admin_routes.ca_management') }}">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div>
+            {% for message in messages %}
+            <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
         <div>
             <label for="college">College:</label>
             <select name="college" id="college" onchange="this.form.submit()">

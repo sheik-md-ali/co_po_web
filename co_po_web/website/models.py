@@ -208,7 +208,8 @@ class InternalAssessment(db.Model):
     subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)
     section_id = db.Column(db.Integer, db.ForeignKey('section.id'), nullable=False)
     assessment_instance_ids = db.Column(db.JSON, nullable=False)
-
+    co_values = db.Column(db.JSON, nullable=True)   
+    target_counts = db.Column(db.JSON, nullable=True)  
     college = db.relationship('College', backref=db.backref('internal_assessments', lazy=True))
     subject = db.relationship('Subject', backref=db.backref('internal_assessments', lazy=True))
     section = db.relationship('Section', backref=db.backref('internal_assessments', lazy=True))

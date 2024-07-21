@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Internal Assessment COs</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="section">
+            <a href="{{ url_for('auth.back_to_dashboard') }}" class="back-button">Back to Dashboard</a>
+
+            <h2>Internal Assessment COs</h2>
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            <div>
+                {% for message in messages %}
+                <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            <!-- Form for selecting Subject, Section, and Calculation Method -->
+            <form method="post" action="{{ url_for('user_routes.internal_assessment_co') }}">
+                <div>
+                    <label for="subjectCode">Subject Code:</label>
+                    <select id="subjectCode" name="subject_code" onchange="this.form.submit()">
+                        <option value="">Select Subject</option>
+                        {% for subject in subjects %}
+                            <option value="{{ subject }}" {% if selected_subject_code == subject %}selected{% endif %}>{{ subject }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                {% if sections %}
+                <div>
+                    <label for="section">Section:</label>
+                    <select id="section" name="section" onchange="this.form.submit()">
+                        <option value="">Select Section</option>
+                        {% for section in sections %}
+                        <option value="{{ section.name }}" {% if selected_section_name == section.name %}selected{% endif %}>
+                            {{ section.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+
+                <div>
+                    <label for="calculationMethod">Calculation Method:</label>
+                    <select id="calculationMethod" name="calculation_method" onchange="this.form.submit()">
+                        <option value="normal" {% if calculation_method == 'normal' %}selected{% endif %}>Normal</option>
+                        <option value="weightage" {% if calculation_method == 'weightage' %}selected{% endif %}>Based on Weightage</option>
+                    </select>
+                </div>
+            </form>
+
+            {% if co_values %}
+            <div>
+                <h3>Internal Assessment CO Values</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>CO</th>
+                            <th>Value</th>
+                            {% for instance_id in target_counts.keys() %}
+                                <th>Instance {{ instance_id }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for co in all_cos %}
+                        <tr>
+                            <td>{{ co }}</td>
+                            <td>{{ co_values.get(co, '-') }}</td>
+                            {% for instance_id in target_counts.keys() %}
+                                <td>
+                                    {% if target_counts[instance_id][co] is defined %}
+                                        {{ target_counts[instance_id][co] }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

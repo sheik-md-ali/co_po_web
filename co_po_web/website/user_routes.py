@@ -5,7 +5,7 @@ from werkzeug.security import generate_password_hash
 from werkzeug.utils import secure_filename
 import sys
 sys.path.append('D:/co_po_web')
-from website.models import User, Subject, Section, CoAttainment, Assessment, AssessmentInstance, IAComponent, College, SubjectList
+from website.models import User, Subject, Section, InternalAssessment, CoAttainment, Assessment, AssessmentInstance, IAComponent, College, SubjectList
 from io import BytesIO
 from PIL import Image
 import base64
@@ -14,6 +14,7 @@ import pandas as pd
 import xlsxwriter
 from website import db
 from openpyxl import Workbook
+import numpy as np
 import io
 
 
@@ -302,29 +303,23 @@ def upload_excel_file():
         mapping_dict = assessment_instance.mapping_dictionary
         co_attainments = CoAttainment.query.filter_by(subject_code=assessment_instance.section.subject_code).all()
         
-        for co_attainment in co_attainments:
-            target_percs = co_attainment.target_perc 
-
         if not co_attainments:
             flash('No LOA data found for the selected subject code.', 'danger')
             return redirect(url_for('user_routes.upload_excel'))
-        
+
         loa_data = [co_attainment.loa_data for co_attainment in co_attainments]
+        target_percs = co_attainments[0].target_perc  # Assuming target_perc is consistent across all COs for the subject
 
-        individual_mapping, overall_mapping = create_mapping(mapping_dict, marks_data, loa_data,target_percs)
-
-        # Fixing the overall_row construction and ensuring no extra columns are created
+        individual_mapping, overall_mapping = create_mapping(mapping_dict, marks_data, loa_data, target_percs)
 
         individual_df = pd.DataFrame(marks_data)
 
-        # Calculating CO percentages, LOAs, and target met
         for co in mapping_dict.values():
             co_key = co['co']
             individual_df[f'{co_key}%'] = individual_df.apply(lambda row: individual_mapping.get(f"{row['REG NO']}_{co_key}", {}).get('percentage', ""), axis=1)
             individual_df[f'{co_key}_LOA'] = individual_df.apply(lambda row: individual_mapping.get(f"{row['REG NO']}_{co_key}", {}).get('level_of_attainment', ""), axis=1)
             individual_df[f'{co_key}_Target'] = individual_df.apply(lambda row: individual_mapping.get(f"{row['REG NO']}_{co_key}", {}).get('target_met', ""), axis=1)
 
-        # Creating the overall row with the correct number of columns
         overall_row = [""] * len(individual_df.columns)
         overall_row[0] = "Overall"
         for co, data in overall_mapping.items():
@@ -333,26 +328,21 @@ def upload_excel_file():
             target_index = individual_df.columns.get_loc(f'{co}_Target')
             overall_row[co_index] = ""
             overall_row[loa_index] = data['average_level_of_attainment']
-            overall_row[target_index] = data['target_met_count']
+            overall_row[target_index] = data['target_met_count']['Y']
 
-        # Concatenate the overall row to the DataFrame
         overall_series = pd.Series(overall_row, index=individual_df.columns)
         individual_df = pd.concat([individual_df, pd.DataFrame([overall_series])], ignore_index=True)
 
-        # Create a DataFrame for overall CO values
-        overall_co_df = pd.DataFrame(columns=['COs', 'Values'])
+        overall_co_df = pd.DataFrame(columns=['COs', 'Values', 'Target_count'])
         overall_co_df['COs'] = list(overall_mapping.keys())
         overall_co_df['Values'] = [data['average_level_of_attainment'] for data in overall_mapping.values()]
-
-        # Print the modified DataFrame to the terminal
-        #print(individual_df.to_string(index=False))
+        overall_co_df['Target_count'] = [data['target_met_count']['Y'] for data in overall_mapping.values()]
 
         output = BytesIO()
         writer = pd.ExcelWriter(output, engine='xlsxwriter')
         workbook = writer.book
         worksheet = workbook.add_worksheet('Sheet1')
 
-        # Write the college and subject info at the top of the sheet
         college = College.query.get(assessment_instance.college_id)
         subject = SubjectList.query.get(assessment_instance.subject_id)
         worksheet.write('A1', college.name)
@@ -362,21 +352,17 @@ def upload_excel_file():
         worksheet.write('A3', f"SUBJECT CODE : {subject.subject_code}                     | SUBJECT NAME: {subject.subject_name}")
         worksheet.merge_range('A3:F3', f"SUBJECT CODE : {subject.subject_code}                     | SUBJECT NAME: {subject.subject_name}")
 
-        # Write COs, Max Marks, and Target headers in the fourth and fifth rows
         worksheet.write('C5', "CO's")
         worksheet.write('C6', 'MAX MARKS')
 
         question_columns = list(mapping_dict.keys())
 
-        # Populate COs, Max Marks, and Targets based on mapping_dict
         for index, question in enumerate(question_columns, start=2):
             worksheet.write(4, index + 1, mapping_dict[question].get('co', ''))  # COs
             worksheet.write(5, index + 1, mapping_dict[question].get('maxMarks', ''))  # Max Marks
 
-        # Write the DataFrame to the Excel file after writing the metadata
         individual_df.to_excel(writer, startrow=7, index=False, sheet_name='Sheet1')
 
-        # Write overall CO table below individual data
         overall_co_df.to_excel(writer, startrow=len(individual_df) + 9, index=False, sheet_name='Sheet1')
 
         writer.close()
@@ -397,54 +383,54 @@ def upload_excel_file():
 
         return redirect(url_for('user_routes.upload_excel'))
 
-
-
-def create_mapping(mapping_dict, marks_data, loa_data,target_percs):
+def create_mapping(mapping_dict, marks_data, loa_data, target_percs):
     individual_mapping = {}
     co_student_attainments = {}
-    co_target_met = {}
+    co_target_met_count = {co: {'Y': 0, 'N': 0} for co in {co_info['co'] for co_info in mapping_dict.values()}}  # Initialize counts
 
     for student in marks_data:
         reg_no = student['REG NO']
         co_totals = {}
+
         for question, co_info in mapping_dict.items():
             question_key = question.upper()
             co = co_info['co']
             max_marks = float(co_info['maxMarks'])
             acquired_marks = student.get(question_key, 0)
+
             if co not in co_totals:
                 co_totals[co] = {'acquired_marks': 0, 'total_weightage': 0}
+
             co_totals[co]['acquired_marks'] += acquired_marks
             co_totals[co]['total_weightage'] += max_marks
 
         for co, totals in co_totals.items():
             percentage = (totals['acquired_marks'] / totals['total_weightage']) * 100 if totals['total_weightage'] != 0 else 0
-            level_of_attainment = calculate_level_of_attainment(percentage, loa_data[0])  # Using the first LOA data entry
-            target_met = 'Y' if percentage > target_percs else 'N'  # Determine if target > 60% is met
+            level_of_attainment = calculate_level_of_attainment(percentage, loa_data[0])
+            target_met = 'Y' if percentage >= target_percs else 'N'
+
             individual_mapping[f"{reg_no}_{co}"] = {
                 'percentage': percentage,
                 'level_of_attainment': level_of_attainment,
                 'target_met': target_met
             }
+
             if co not in co_student_attainments:
                 co_student_attainments[co] = []
-            co_student_attainments[co].append(level_of_attainment)
-            if target_met == 'Y':
-                if co not in co_target_met:
-                    co_target_met[co] = 0
-                co_target_met[co] += 1
 
-    # Adjusting the overall_mapping to round the values and include target met count
+            co_student_attainments[co].append(level_of_attainment)
+
+            co_target_met_count[co][target_met] += 1
+
     overall_mapping = {
         co: {
             'average_level_of_attainment': round(sum(levels) / len(levels), 2) if levels else 0,
-            'target_met_count': co_target_met.get(co, 0)
+            'target_met_count': co_target_met_count[co],
+            'total_students': len(marks_data)
         } for co, levels in co_student_attainments.items()
     }
 
     return individual_mapping, overall_mapping
-
-
 
 def calculate_level_of_attainment(percentage, loa_data):
     for level_info in loa_data:
@@ -512,3 +498,198 @@ def download_assessment():
                            selected_section_name=selected_section_name,
                            selected_assessment_instance_id=selected_assessment_instance_id,
                            assessment_details=assessment_details)
+
+@user_routes.route('/user/internal_assessment_co', methods=['GET', 'POST'])
+@login_required
+def internal_assessment_co():
+    subject_codes = db.session.query(Subject.subject_code).filter_by(user_id=current_user.id).distinct().all()
+    subject_codes = [code[0] for code in subject_codes]
+
+    selected_subject_code = request.form.get('subject_code')
+    selected_section_name = request.form.get('section')
+    calculation_method = request.form.get('calculation_method', 'normal')
+    
+    co_values = {}
+    target_counts = {}
+    all_cos = set()
+
+    sections = []
+
+    if selected_subject_code:
+        sections = db.session.query(Section).join(Subject, Section.subject_code == Subject.subject_code).filter(
+            Subject.user_id == current_user.id,
+            Subject.subject_code == selected_subject_code
+        ).all()
+
+        if selected_section_name:
+            section = db.session.query(Section).join(Subject, Section.subject_code == Subject.subject_code).filter(
+                Subject.user_id == current_user.id,
+                Section.subject_code == selected_subject_code,
+                Section.name == selected_section_name
+            ).first()
+
+            if section:
+                subject = db.session.query(Subject).filter_by(subject_code=selected_subject_code).first()
+                if subject:
+                    internal_assessment = db.session.query(InternalAssessment).filter_by(
+                        subject_id=subject.id,
+                        section_id=section.id
+                    ).first()
+
+                    if internal_assessment:
+                        if calculation_method == 'weightage':
+                            co_values, target_counts, all_cos = calculate_co_weightage(internal_assessment.id)
+                        else:
+                            co_values, target_counts, all_cos = calculate_co(internal_assessment.id)
+                        internal_assessment.co_values = co_values
+                        internal_assessment.target_counts = target_counts
+                        db.session.commit()
+
+    return render_template('user/internal_assessment_co.html',
+                           subjects=subject_codes,
+                           sections=sections,
+                           selected_subject_code=selected_subject_code,
+                           selected_section_name=selected_section_name,
+                           co_values=co_values,
+                           target_counts=target_counts,
+                           all_cos=all_cos,
+                           calculation_method=calculation_method)
+
+
+
+def calculate_co(internal_assessment_id):
+    internal_assessment = InternalAssessment.query.get(internal_assessment_id)
+    if not internal_assessment:
+        return {}, {}, []
+
+    assessment_instance_ids = internal_assessment.assessment_instance_ids
+
+    co_data = {}
+    target_count_data = {}
+    all_cos = set()
+
+    for instance_id in assessment_instance_ids:
+        assessment_instance = AssessmentInstance.query.get(instance_id)
+        if not assessment_instance or not assessment_instance.excel_file:
+            continue
+
+        excel_data = BytesIO(assessment_instance.excel_file)
+        df = pd.read_excel(excel_data)
+
+        header_row_index = df[df.iloc[:, 0] == 'COs'].index[0]
+        co_table = df.iloc[header_row_index + 1:, :3]
+        co_table.columns = ['COs', 'Values', 'Target_count']
+        co_table = co_table.dropna(subset=['COs'])
+
+        target_count_data[instance_id] = {}
+
+        for _, row in co_table.iterrows():
+            co = row['COs']
+            value = row['Values']
+            target_count = row['Target_count']
+
+            if pd.isna(value):
+                value = 0
+            if pd.isna(target_count):
+                target_count = 0
+
+            all_cos.add(co)
+
+            if co not in co_data:
+                co_data[co] = []
+            if co not in target_count_data[instance_id]:
+                target_count_data[instance_id][co] = 0
+
+            co_data[co].append(value)
+            target_count_data[instance_id][co] += target_count
+
+    # Calculate average CO values and round them to 2 decimal places
+    co_data = {co: round(sum(values) / len(values), 2) for co, values in co_data.items()}
+
+    # Sort COs based on a predefined order
+    predefined_order = ['CO1', 'CO2', 'CO3', 'CO4', 'CO5']
+    sorted_co_data = {co: co_data[co] for co in predefined_order if co in co_data}
+    sorted_target_count_data = {instance_id: {co: target_count_data[instance_id].get(co, 0) for co in predefined_order} for instance_id in target_count_data}
+
+    return sorted_co_data, sorted_target_count_data, predefined_order
+
+def calculate_co_weightage(internal_assessment_id):
+    internal_assessment = InternalAssessment.query.get(internal_assessment_id)
+    if not internal_assessment:
+        return {}, {}, []
+
+    assessment_instance_ids = internal_assessment.assessment_instance_ids
+
+    co_data = {}
+    target_count_data = {}
+    all_cos = set()
+
+    for instance_id in assessment_instance_ids:
+        assessment_instance = AssessmentInstance.query.get(instance_id)
+        if not assessment_instance or not assessment_instance.excel_file:
+            continue
+
+        excel_data = BytesIO(assessment_instance.excel_file)
+        df = pd.read_excel(excel_data)
+
+        header_row_index = df[df.iloc[:, 0] == 'COs'].index[0]
+        co_table = df.iloc[header_row_index + 1:, :3]
+        co_table.columns = ['COs', 'Values', 'Target_count']
+        co_table = co_table.dropna(subset=['COs'])
+
+        target_count_data[instance_id] = {}
+
+        for _, row in co_table.iterrows():
+            co = row['COs']
+            value = row['Values']
+            target_count = row['Target_count']
+
+            if pd.isna(value):
+                value = 0
+            if pd.isna(target_count):
+                target_count = 0
+
+            all_cos.add(co)
+
+            if co not in co_data:
+                co_data[co] = []
+            if co not in target_count_data[instance_id]:
+                target_count_data[instance_id][co] = 0
+
+            co_data[co].append(value)
+            target_count_data[instance_id][co] += target_count
+
+    # Calculate weighted CO values
+    co_data_weighted = {}
+    predefined_order = ['CO1', 'CO2', 'CO3', 'CO4', 'CO5']
+    
+    for co in predefined_order:
+        total_value = 0
+        total_weight = 0
+        for instance_id in target_count_data:
+            assessment_instance = AssessmentInstance.query.get(instance_id)
+            if not assessment_instance:
+                continue
+            
+            assessment = Assessment.query.filter_by(id=assessment_instance.assessment_id).first()
+            if not assessment:
+                continue
+            
+            ia_component = IAComponent.query.filter_by(id=assessment.ia_component_id).first()
+            if not ia_component:
+                continue
+
+            cia_weightage = ia_component.weightage
+            assessment_weightage = assessment.weightage
+            weight = cia_weightage * assessment_weightage
+            
+            total_weight += weight
+            total_value += weight * target_count_data[instance_id].get(co, 0)
+        
+        if total_weight > 0:
+            co_data_weighted[co] = round(total_value / total_weight, 2)
+
+    sorted_co_data_weighted = {co: co_data_weighted[co] for co in predefined_order if co in co_data_weighted}
+    sorted_target_count_data = {instance_id: {co: target_count_data[instance_id].get(co, 0) for co in predefined_order} for instance_id in target_count_data}
+
+    return sorted_co_data_weighted, sorted_target_count_data, predefined_order

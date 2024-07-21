@@ -86,7 +86,8 @@
                 </select>
             </div>
         </form>
-        
+        <div id="additionalContent" style="display:none;">
+
         <form method="POST" action="{{ url_for('admin_routes.co_attainment_submit') }}">
             <input type="hidden" name="college" value="{{ request.form.get('college', '') }}">
             <input type="hidden" name="subject" value="{{ request.form.get('subject', '') }}">
@@ -259,12 +260,26 @@
             <button id="save" type="submit" class="btn btn-primary">Save</button>
 
         </form>
+        </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 
     <script>
+         // Show the additional content only when college, subject, and section are selected
+         function checkSelections() {
+            const college = document.getElementById('college').value;
+            const subject = document.getElementById('subject').value;
+            const additionalContent = document.getElementById('additionalContent');
+            if (college && subject) {
+                additionalContent.style.display = 'block';
+            } else {
+                additionalContent.style.display = 'none';
+            }
+        }
+        document.getElementById('college').addEventListener('change', checkSelections);
+        document.getElementById('subject').addEventListener('change', checkSelections);        checkSelections();
 
         
         // JavaScript code to add and remove CO and LOA fields

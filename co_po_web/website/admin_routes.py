@@ -1,15 +1,10 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from flask_login import login_required
-from werkzeug.security import generate_password_hash
 import sys
 sys.path.append('D:/co_po_web')
 from website.models import User, Assessment, IAComponent, InternalAssessment, Section, College, CollegeStaff, SubjectList, Subject, AssessmentInstance, CoAttainment
-from io import BytesIO
-from PIL import Image
 import base64
 from website import db
-from werkzeug.utils import secure_filename
-import os
 import pandas as pd
 
 admin_routes = Blueprint('admin_routes', __name__)

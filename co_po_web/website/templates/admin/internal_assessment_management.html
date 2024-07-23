@@ -163,9 +163,11 @@
 </head>
 <body>
     <a href="{{ url_for('auth.back_to_dashboard') }}" class="back-button">Back to Dashboard</a>
-    <h1>Internal Assessment Management</h1>
-    
     <form method="POST" action="{{ url_for('admin_routes.internal_assessment_management') }}">
+        <h1>Internal Assessment Management</h1>
+        <br>
+        <p>Manage the internal components of the selected subject for calculation of the co </p>
+        <br>
         <!-- Flash Messages -->
         {% with messages = get_flashed_messages() %}
         {% if messages %}

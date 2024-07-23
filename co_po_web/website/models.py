@@ -3,7 +3,7 @@ sys.path.append('D:/co_po_web')
 from website import db
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy import PickleType, JSON
+from sqlalchemy import JSON
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)

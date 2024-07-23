@@ -1,12 +1,8 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, Blueprint
-from flask_login import UserMixin, LoginManager, login_user, logout_user, login_required, current_user
-from werkzeug.security import generate_password_hash, check_password_hash
+from flask import render_template, request, redirect, url_for, flash, session, Blueprint
+from flask_login import login_user, logout_user, login_required, current_user
 import sys
 sys.path.append('D:/co_po_web')
 from website.models import User, Admin
-from io import BytesIO
-from PIL import Image
-import base64
 from website import db
 
 auth = Blueprint('auth', __name__)

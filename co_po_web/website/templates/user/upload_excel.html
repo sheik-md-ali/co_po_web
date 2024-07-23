@@ -147,7 +147,7 @@
                 <a href="{{ url_for('auth.back_to_dashboard') }}" class="back-button">Back to Dashboard</a>
 
             <h2>Upload excel file</h2>
-            <h3>Map the questions with the respective COs and define the marks.</h3>
+            <h3>Upload the marks data by selecting and downloading the assessment template given below</h3>
 
             <!-- Flash Messages -->
             {% with messages = get_flashed_messages() %}
@@ -202,7 +202,7 @@
                 {% endif %}
                 {% if assessment_details %}
                 <div id="assessmentDetails">
-                    <h3>Assessment: {{ assessment_details.name }}</h3>
+                    <h3>Assessment Name: {{ assessment_details.name }}</h3>
                     <p>Max Marks: {{ assessment_details.max_marks }}</p>
                 </div>
                 {% endif %}

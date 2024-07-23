@@ -145,8 +145,8 @@
         <div class="section">
             <a href="{{ url_for('auth.back_to_dashboard') }}" class="back-button">Back to Dashboard</a>
 
-            <h2>Download Assessment Excel File</h2>
-
+            <h2>Download Assessment Excel File </h2>
+            <p>Download the calculated excel files after co and taget calculations.</p>
             <!-- Flash Messages -->
             {% with messages = get_flashed_messages() %}
             {% if messages %}
@@ -206,7 +206,7 @@
             {% if assessment_details %}
             <div>
                 <h3>Assessment Details</h3>
-                <p><strong>Name:</strong> {{ assessment_details.name }}</p>
+                <p><strong>Assessment Name:</strong> {{ assessment_details.name }}</p>
                 <p><strong>Max Marks:</strong> {{ assessment_details.max_marks }}</p>
                 <form method="post" action="{{ url_for('user_routes.download_assessment') }}">
                     <input type="hidden" name="subject_code" value="{{ selected_subject_code }}">

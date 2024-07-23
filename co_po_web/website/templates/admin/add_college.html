@@ -150,9 +150,12 @@
     </style>
 </head>
 <body>
+    <a href="{{ url_for('auth.back_to_dashboard') }}" class="back-button">Back to Dashboard</a>
+
     <div class="container">
-        <a href="{{ url_for('auth.back_to_dashboard') }}" class="back-button">Back to Dashboard</a>
-        <!-- Flash Messages -->
+        
+        <form action="{{ url_for('admin_routes.add_college') }}" method="POST">
+            <!-- Flash Messages -->
         {% with messages = get_flashed_messages() %}
         {% if messages %}
         <div>
@@ -163,7 +166,6 @@
         {% endif %}
         {% endwith %}
         <h1>Add College</h1>
-        <form action="{{ url_for('admin_routes.add_college') }}" method="POST">
             <div class="form-group">
                 <label for="name">Name:</label>
                 <input type="text" id="name" name="name" class="form-control" required>

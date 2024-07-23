@@ -212,7 +212,7 @@
         <div class="section">
             <a href="{{ url_for('auth.back_to_dashboard') }}" class="back-button">Back to Dashboard</a>
 
-            <h2>Question based Mapping</h2>
+            <h2>Question Paper Mapping</h2>
             <h3>Map the questions with the respective COs and define the marks.</h3>
 
             <!-- Flash Messages -->
@@ -272,8 +272,8 @@
 
             {% if assessment_details %}
             <div id="assessmentDetails">
-                <h3>Assessment: {{ assessment_details.name }}</h3>
-                <p>Max Marks: {{ assessment_details.max_marks }}</p>
+                <h3>Assessment Name : {{ assessment_details.name }}</h3>
+                <p>Max Marks : {{ assessment_details.max_marks }}</p>
             </div>
 
             <!-- Form for mapping questions -->

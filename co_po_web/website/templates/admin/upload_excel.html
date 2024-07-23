@@ -122,6 +122,7 @@
     <a href="{{ url_for('auth.back_to_dashboard') }}" class="back-button">Back to Dashboard</a>
     <div class="container">
         <h1>Upload Excel</h1>
+        <p>Upload the staff list and the subjects that are associated for the college</p>
         <form action="{{ url_for('admin_routes.upload_excel') }}" method="POST" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="college">Select College:</label>

@@ -414,6 +414,7 @@ def download_assessment():
                            selected_section_name=selected_section_name,
                            selected_assessment_instance_id=selected_assessment_instance_id,
                            assessment_details=assessment_details)
+from flask import flash
 
 @user_routes.route('/user/internal_assessment_co', methods=['GET', 'POST'])
 @login_required
@@ -423,11 +424,12 @@ def internal_assessment_co():
 
     selected_subject_code = request.form.get('subject_code')
     selected_section_name = request.form.get('section')
-    calculation_method = request.form.get('calculation_method', 'normal')
+    calculation_method = request.form.get('calculation_method')
     
     co_values = {}
     target_counts = {}
     all_cos = set()
+    assessment_names = {}  # Dictionary to hold assessment names
 
     sections = []
 
@@ -444,7 +446,7 @@ def internal_assessment_co():
                 Section.name == selected_section_name
             ).first()
 
-            if section:
+            if section and calculation_method:
                 subject = db.session.query(Subject).filter_by(subject_code=selected_subject_code).first()
                 if subject:
                     internal_assessment = db.session.query(InternalAssessment).filter_by(
@@ -457,9 +459,32 @@ def internal_assessment_co():
                             co_values, target_counts, all_cos = calculate_co_weightage(internal_assessment.id)
                         else:
                             co_values, target_counts, all_cos = calculate_co(internal_assessment.id)
+
+                        # Fetch assessment names based on instance IDs in target_counts
+                        instance_ids = list(target_counts.keys())
+                        assessments = db.session.query(AssessmentInstance).filter(
+                            AssessmentInstance.id.in_(instance_ids)
+                        ).all()
+
+                        for assessment in assessments:
+                            assessment_names[assessment.id] = assessment.name
+
                         internal_assessment.co_values = co_values
                         internal_assessment.target_counts = target_counts
                         db.session.commit()
+                    else:
+                        flash('No internal assessment is available for the selected section.', 'warning')
+                else:
+                    flash('Selected subject does not exist.', 'warning')
+            else:
+                if not section:
+                    flash('Selected section does not exist.', 'warning')
+                if not calculation_method:
+                    flash('Please select a calculation method.', 'warning')
+        else:
+            flash('Please select a section.', 'warning')
+    else:
+        flash('Please select a subject.', 'warning')
 
     return render_template('user/internal_assessment_co.html',
                            subjects=subject_codes,
@@ -469,5 +494,5 @@ def internal_assessment_co():
                            co_values=co_values,
                            target_counts=target_counts,
                            all_cos=all_cos,
+                           assessment_names=assessment_names,  # Pass the assessment names
                            calculation_method=calculation_method)
-

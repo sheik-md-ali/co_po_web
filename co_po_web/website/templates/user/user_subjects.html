@@ -8,7 +8,6 @@
     <title>Subjects Handled by {{ current_user.name }}</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <style>
-        /* Custom CSS for table */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f5f5f5;
@@ -16,22 +15,24 @@
         }
 
         .container {
-            max-width: 900px;
+            max-width: 1100px;
             margin: 0 auto;
+            padding: 0 20px;
         }
 
         .table {
             background-color: #fff;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
         }
 
         .table th,
         .table td {
             vertical-align: middle;
             text-align: center;
-            font-size: 14px;
-            padding: 12px;
+            font-size: 16px;
+            padding: 16px;
         }
 
         .table th {
@@ -56,8 +57,23 @@
         h3 {
             text-align: center;
             margin-bottom: 30px;
-            font-size: 24px;
+            font-size: 28px;
             color: #333;
+        }
+
+        a.back-button {
+            display: inline-block;
+            margin: 20px 0;
+            padding: 10px 20px;
+            background-color: #272626;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        a.back-button:hover {
+            background-color: #6d6666;
         }
 
         /* Responsive adjustments */
@@ -65,13 +81,52 @@
             .container {
                 padding: 0 10px;
             }
+
+            .table th,
+            .table td {
+                font-size: 14px;
+                padding: 12px;
+            }
+
+            h3 {
+                font-size: 24px;
+            }
+
+            a.back-button {
+                margin: 10px 0;
+                padding: 8px 16px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .table-responsive {
+                overflow-x: auto;
+            }
+
+            .table th,
+            .table td {
+                font-size: 12px;
+                padding: 10px;
+            }
+
+            h3 {
+                font-size: 20px;
+            }
+
+            a.back-button {
+                margin: 5px 0;
+                padding: 6px 12px;
+                font-size: 12px;
+            }
         }
     </style>
 </head>
 
 <body>
     <div class="container mt-5">
-        <h3>Subjects Handled by you Mr/mrs {{ current_user.name }}</h3>
+        <a href="{{ url_for('auth.back_to_dashboard') }}" class="back-button">Back to Dashboard</a>
+        <h3>Subjects Handled by you Mr/Mrs {{ current_user.name }}</h3>
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead>

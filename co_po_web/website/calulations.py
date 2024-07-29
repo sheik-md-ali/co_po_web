@@ -86,8 +86,6 @@ def calculate_level_of_attainment(percentage, loa_data):
         if min_value <= percentage <= max_value:
             return int(level_info['level'])
     return 0
-
-
 def calculate_co(internal_assessment_id):
     internal_assessment = InternalAssessment.query.get(internal_assessment_id)
     if not internal_assessment:
@@ -137,21 +135,19 @@ def calculate_co(internal_assessment_id):
     # Calculate average CO values and round them to 2 decimal places
     co_data = {co: round(sum(values) / len(values), 2) for co, values in co_data.items()}
 
-    # Sort COs based on a predefined order
-    predefined_order = ['CO1', 'CO2', 'CO3', 'CO4', 'CO5']   
+    # Sort COs dynamically based on all COs found
+    predefined_order = sorted(all_cos)   
     sorted_co_data = {co: co_data[co] for co in predefined_order if co in co_data}
     sorted_target_count_data = {instance_id: {co: target_count_data[instance_id].get(co, 0) for co in predefined_order} for instance_id in target_count_data}
 
     return sorted_co_data, sorted_target_count_data, predefined_order
+
 def calculate_co_weightage(internal_assessment_id):
-    print(f"Calculating CO weightage for Internal Assessment ID: {internal_assessment_id}")
     internal_assessment = InternalAssessment.query.get(internal_assessment_id)
     if not internal_assessment:
-        print("Internal assessment not found.")
         return {}, {}, [], {}
 
     assessment_instance_ids = internal_assessment.assessment_instance_ids
-    print(f"Assessment Instance IDs: {assessment_instance_ids}")
 
     co_data = {}
     target_count_data = {}
@@ -159,24 +155,20 @@ def calculate_co_weightage(internal_assessment_id):
     cia_data = {}
     final_co_data = {}
 
-    # Step 3: Process each assessment instance
+    # Process each assessment instance
     for instance_id in assessment_instance_ids:
-        print(f"Processing Assessment Instance ID: {instance_id}")
         assessment_instance = AssessmentInstance.query.get(instance_id)
         if not assessment_instance or not assessment_instance.excel_file:
-            print(f"Assessment instance not found or no excel file for instance ID: {instance_id}")
             continue
 
         assessment = Assessment.query.filter_by(id=assessment_instance.assessment_id).first()
         ia_component = IAComponent.query.filter_by(id=assessment.ia_component_id).first()
 
         if not assessment or not ia_component:
-            print(f"Assessment or IAComponent not found for instance ID: {instance_id}")
             continue
 
         assessment_weightage = assessment.weightage
         cia_weightage = ia_component.weightage
-        print(f"Assessment Weightage: {assessment_weightage}, CIA Weightage: {cia_weightage}")
 
         if ia_component.id not in cia_data:
             cia_data[ia_component.id] = {
@@ -185,18 +177,16 @@ def calculate_co_weightage(internal_assessment_id):
                 'co_data': {}
             }
 
+        # Add assessment_weightage to the total_weightage
         cia_data[ia_component.id]['total_weightage'] += assessment_weightage
-        print(f"Updated total weightage for CIA Component ID {ia_component.id}: {cia_data[ia_component.id]['total_weightage']}")
 
         excel_data = BytesIO(assessment_instance.excel_file)
         df = pd.read_excel(excel_data)
-        print(f"Read Excel data for instance ID: {instance_id}")
 
         header_row_index = df[df.iloc[:, 0] == 'COs'].index[0]
         co_table = df.iloc[header_row_index + 1:, :3]
         co_table.columns = ['COs', 'Values', 'Target_count']
         co_table = co_table.dropna(subset=['COs'])
-        print(f"Extracted CO table for instance ID: {instance_id}")
 
         if instance_id not in target_count_data:
             target_count_data[instance_id] = {}
@@ -212,23 +202,19 @@ def calculate_co_weightage(internal_assessment_id):
                 target_count = 0
 
             all_cos.add(co)
-            print(f"Processing CO: {co}, Value: {value}, Target Count: {target_count}")
 
             if co not in cia_data[ia_component.id]['co_data']:
                 cia_data[ia_component.id]['co_data'][co] = 0
             if co not in target_count_data[instance_id]:
                 target_count_data[instance_id][co] = 0
 
-            cia_data[ia_component.id]['co_data'][co] += value * (assessment_weightage / cia_data[ia_component.id]['total_weightage'])
+            cia_data[ia_component.id]['co_data'][co] += value * (assessment_weightage / 100)
             target_count_data[instance_id][co] += target_count
-            print(f"Updated CO data for CIA Component ID {ia_component.id}: {cia_data[ia_component.id]['co_data'][co]}")
-            print(f"Updated target count for instance ID {instance_id}, CO: {co}: {target_count_data[instance_id][co]}")
 
     # Normalize the CO values for each CIA component
     for cia_id, cia_info in cia_data.items():
         for co, value in cia_info['co_data'].items():
             cia_info['co_data'][co] = (value / cia_info['total_weightage']) * 100
-            print(f"Normalized CO data for CIA Component ID {cia_id}, CO: {co}: {cia_info['co_data'][co]}")
 
     # Calculate the final CO values
     for cia_id, cia_info in cia_data.items():
@@ -236,15 +222,10 @@ def calculate_co_weightage(internal_assessment_id):
             if co not in final_co_data:
                 final_co_data[co] = 0
             final_co_data[co] += value * (cia_info['weightage'] / 100)
-            print(f"Calculated final CO value for CO: {co}: {final_co_data[co]}")
 
-    # Sort COs based on a predefined order
-    predefined_order = ['CO1', 'CO2', 'CO3', 'CO4', 'CO5']
+    # Sort COs dynamically based on all COs found
+    predefined_order = sorted(all_cos)
     sorted_final_co_data = {co: round(final_co_data[co], 2) for co in predefined_order if co in final_co_data}
     sorted_target_count_data = {instance_id: {co: target_count_data[instance_id].get(co, 0) for co in predefined_order} for instance_id in target_count_data}
-
-    print(f"Final CO Data: {sorted_final_co_data}")
-    print(f"Target Count Data: {sorted_target_count_data}")
-    print(f"Predefined Order: {predefined_order}")
 
     return sorted_final_co_data, sorted_target_count_data, predefined_order

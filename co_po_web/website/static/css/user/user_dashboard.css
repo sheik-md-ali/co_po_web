@@ -282,7 +282,7 @@ img {
     }
     .menu-button {
         display: inline-flex;
-        margin-top: 150px;
+        margin-left: auto;
     }
     .content {
         flex-direction: column;
@@ -294,7 +294,6 @@ img {
     }
     .content-panel.active {
         display: block;
-
     }
     .header-navigation {
         display: grid;

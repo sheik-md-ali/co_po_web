@@ -4,176 +4,328 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Co-po Website</title>
+    <title>CO-PO Calculation</title>
     <style>
-        *{
+        * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: Arial, Helvetica, sans-serif;
+            font-family: 'Poppins', Arial, Helvetica, sans-serif;
         }
 
-        .header{
+        body {
+            overflow-x: hidden;
+        }
+
+        .header {
             width: 100%;
             height: 100vh;
-            background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(../static/images/bank_bg.jpg);
+            background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwzNjUyOXwwfDF8c2VhcmNofDR8fGJhY2tncm91bmR8ZW58MHx8fHwxNjE1OTQ3NzQ3&ixlib=rb-1.2.1&q=80&w=1080');
             background-position: center;
             background-size: cover;
             overflow: hidden;
+            position: relative;
         }
 
-        nav{
+        nav {
             width: 100%;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 18px 8%;
+            padding: 20px 8%;
             transition: 0.5s ease-in-out;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 3;
         }
+
         .logo {
             display: flex;
-            align-items: center; /* Align items vertically */
-            margin-right: 20px; /* Add margin to create space between logo and text */
+            align-items: center;
         }
 
         .logo img {
             cursor: pointer;
-            height: 60px; 
-            width:60px; 
-            border-radius: 80%;
+            height: 60px;
+            width: 60px;
+            border-radius: 50%;
         }
 
         .name {
-            color: white;
-            font-size: 24px;
+            color: #f7b733;
+            font-size: 28px;
             font-weight: bold;
             font-style: italic;
-            margin-left: 20px; 
+            margin-left: 20px;
         }
 
-
-
-        nav ul li{
-            display: inline-block;
+        nav ul {
+            display: flex;
             list-style: none;
-            margin: 10px 20px;
         }
 
-        nav ul li a{
+        nav ul li {
+            margin: 0 15px;
+        }
+
+        nav ul li a {
             text-decoration: none;
             color: #fff;
             font-weight: 600;
-        }
-
-        nav:hover {
-            padding: 10px 8%;
-            background: #888817;
+            padding: 10px 20px;
+            border-radius: 30px;
+            transition: 0.3s ease-in-out;
         }
 
         nav ul li a:hover {
-            text-decoration: underline; /* Add underline effect */
-            text-decoration-color: black; /* Set underline color to black */
-            text-underline-offset: 3px; /* Add space between text and underline */
-            font-weight: bold; /* Make the text bold */
-        }
-
-        .content{
+            background-color: #f7b733;
             color: #fff;
-            margin-top: 9%;
-            margin-left: 8%;
+            font-weight: bold;
         }
 
-        .content h1{
-            font-size: 80px;
+        .nav-toggle {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+        }
+
+        .nav-toggle span {
+            height: 3px;
+            width: 25px;
+            background: #fff;
+            margin: 5px 0;
+            transition: 0.3s;
+        }
+
+        .content {
+            color: #fff;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 2;
+        }
+
+        .content h1 {
+            font-size: 60px;
             text-transform: capitalize;
+            animation: fadeInDown 1s ease-out forwards;
         }
 
-        .content h1 span{
-            color: #777702;
+        .content h1 span {
+            color: #f7b733;
         }
 
-        .content p{
+        .content p {
             max-width: 500px;
-            font-size: 30px;
-            margin: 20px 0;
+            font-size: 24px;
+            margin: 20px auto;
             opacity: 0;
+            animation: fadeInLeft 1.5s ease-out forwards;
         }
 
-        .links{
+        .links {
             margin-top: 30px;
             opacity: 0;
+            animation: fadeInUp 2s ease-out forwards;
         }
 
-        .links a{
+        .links a {
             color: #fff;
             text-decoration: none;
             display: inline-block;
-        }
-
-        .btn {
-            border: 2px solid #fff; /* Set border color and thickness */
             padding: 10px 35px;
             margin-right: 15px;
             border-radius: 30px;
-            transition: all 0.3s ease; /* Add transition for smooth effect */
+            border: 2px solid #f7b733;
+            transition: all 0.3s ease;
         }
 
-        /* Hover effect for buttons */
-        .links.slide-left a.btn:hover {
-            background-color: #fff;
-            color: #333;
-            border-color: #333; /* Change border color on hover */
+        .links a:hover {
+            background-color: #f7b733;
+            color: #fff;
+            border-color: #f7b733;
+            transform: scale(1.1);
         }
 
-        .slide-left{
-            animation: slideleft 1s linear forwards;
-        }
-
-        @keyframes slideleft{
-            0%{
-                transform: translate(100px);
+        @keyframes fadeInDown {
+            from {
                 opacity: 0;
+                transform: translateY(-20px);
             }
-            100%{
-                transform: translate(0px);
+            to {
                 opacity: 1;
+                transform: translateY(0);
             }
         }
 
-        p.slide-left{
-            animation-delay: 1s;
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
-        .links.slide-left{
-            animation-delay: 2s;
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        
 
+        .animated-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .circle {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: move 10s infinite linear;
+        }
+
+        .circle.small {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(45deg, #ff6f61, #f7b733, #ff6f61);
+            animation-duration: 7s;
+        }
+
+        .circle.medium {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(45deg, #ff6f61, #f7b733, #ff6f61);
+            animation-duration: 10s;
+        }
+
+        .circle.large {
+            width: 300px;
+            height: 300px;
+            background: linear-gradient(45deg, #ff6f61, #f7b733, #ff6f61);
+            animation-duration: 12s;
+        }
+
+        @keyframes move {
+            0% {
+                transform: translateY(0) translateX(0) scale(1);
+            }
+            50% {
+                transform: translateY(200px) translateX(100px) scale(1.5);
+            }
+            100% {
+                transform: translateY(0) translateX(0) scale(1);
+            }
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 10px 8%;
+            }
+
+            .nav-toggle {
+                display: flex;
+            }
+
+            nav ul {
+                flex-direction: column;
+                width: 100%;
+                margin-top: 10px;
+                display: none;
+            }
+
+            nav ul.show {
+                display: flex;
+            }
+
+            nav ul li {
+                margin: 10px 0;
+            }
+
+            .content {
+                margin-top: 0;
+                top: 60%;
+                left: 50%;
+                transform: translate(-50%, -60%);
+                padding: 0 10px;
+            }
+
+            .content h1 {
+                font-size: 35px;
+            }
+
+            .content p {
+                font-size: 16px;
+            }
+
+            .links a {
+                padding: 10px 20px;
+            }
+
+            .circle {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="header">
+        <div class="animated-bg">
+            <div class="circle small"></div>
+            <div class="circle medium"></div>
+            <div class="circle large"></div>
+        </div>
         <nav>
-          <div class="logo">
-            <img src="" alt="logo">
-            <span class="name">CO-PO calculation</span>
-           </div>        
-            
+            <div class="logo">
+                <img src="{{ url_for('static', filename='images/DAI_logo-1.jpeg') }}" alt="logo">
+                <span class="name">CO-PO Calculation</span>
+            </div>
+            <div class="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
             <ul>
-                <li><a href="" target="_blank">Blogs & News</a></li>
+                <li><a href="#" target="_blank">Blogs & News</a></li>
                 <li><a href="/ourservices">Our Services</a></li>
                 <li><a href="/about">Team</a></li>
-                <li><a href="/contact">Contact us</a></li>
+                <li><a href="/contact">Contact Us</a></li>
             </ul>
         </nav>
         <div class="content">
-            <h1 class="slide-left">Welome to <span>Our </span> <br> Website</h1>
-            <p class="slide-left">Calculate co-po with us today!</p>
-            <div class="links slide-left">
+            <h1>Welcome to <span>Our</span> Website</h1>
+            <p>Calculate CO-PO with us today!</p>
+            <div class="links">
                 <a href="/login" class="btn">Login</a>
-                <a href="#" class="btn">Signup</a>
             </div>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const navToggle = document.querySelector('.nav-toggle');
+            const navList = document.querySelector('nav ul');
+
+            navToggle.addEventListener('click', function() {
+                console.log('Nav toggle clicked');
+                navList.classList.toggle('show');
+                console.log('nav ul class list:', navList.classList);
+            });
+        });
+    </script>
 </body>
 </html>

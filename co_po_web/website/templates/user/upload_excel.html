@@ -170,7 +170,7 @@
                             <option value="{{ subject }}" {% if selected_subject_code == subject %}selected{% endif %}>{{ subject }}</option>
                         {% endfor %}
                     </select>
-                </div>                
+                </div>
                 {% if sections %}
                 <div>
                     <label for="section">Section:</label>
@@ -184,6 +184,16 @@
                     </select>
                 </div>
                 {% endif %}
+                <!-- New dropdown for Assessment Type -->
+                <div>
+                    <label for="assessmentType">Assessment Type:</label>
+                    <select id="assessmentType" name="assessment_type" onchange="this.form.submit()">
+                        <option value="">Select Assessment Type</option>
+                        <option value="assessments" {% if selected_assessment_type == 'assessments' %}selected{% endif %}>Assessments</option>
+                        <option value="semester_end_exam" {% if selected_assessment_type == 'semester_end_exam' %}selected{% endif %}>Semester End Exam</option>
+                        <option value="course_exit_survey" {% if selected_assessment_type == 'course_exit_survey' %}selected{% endif %}>Course Exit Survey</option>
+                    </select>
+                </div>
                 {% if assessment_instances %}
                 <div>
                     <label for="assessmentInstance">Assessment Instance:</label>
@@ -206,13 +216,15 @@
                     <p>Max Marks: {{ assessment_details.max_marks }}</p>
                 </div>
                 {% endif %}
+                
+                
             </form>
-
+            
             <!-- Form for uploading Excel file -->
-            {% if assessment_details %}
+            {% if selected_assessment_type %}
             <form method="post" action="{{ url_for('user_routes.upload_excel_file') }}" enctype="multipart/form-data">
                 <div>
-                    <label for="assessmentfile">Assessment file (Excel File):</label>
+                    <label for="assessmentfile">Upload File (Excel File):</label>
                     <input type="file" id="assessmentfile" name="assessmentfile" accept=".xls,.xlsx" required>
                 </div>
                 <div class="save-submit-buttons">
@@ -220,13 +232,14 @@
                     <button type="submit" name="action" value="submit">Submit</button>
                 </div>
                 <input type="hidden" name="assessment_instance" value="{{ selected_assessment_instance_id }}">
+                <input type="hidden" name="assessment_type" value="{{ selected_assessment_type }}">
             </form>
             <div class="template-download">
                 <p>Download the template Excel file:</p>
-                <a href="{{ url_for('user_routes.download_template', assessment_instance_id=selected_assessment_instance_id) }}" download>Download Template</a>
+                <a href="{{ url_for('user_routes.download_template', assessment_type=selected_assessment_type, assessment_instance_id=selected_assessment_instance_id) }}" download>Download Template</a>
             </div>
             {% endif %}
-        </div>
+            
     </div>
 </body>
 </html>

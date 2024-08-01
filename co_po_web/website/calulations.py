@@ -86,6 +86,7 @@ def calculate_level_of_attainment(percentage, loa_data):
         if min_value <= percentage <= max_value:
             return int(level_info['level'])
     return 0
+
 def calculate_co(internal_assessment_id):
     internal_assessment = InternalAssessment.query.get(internal_assessment_id)
     if not internal_assessment:

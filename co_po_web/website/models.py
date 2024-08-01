@@ -67,6 +67,7 @@ class CollegeStaff(db.Model):
         self.branch = branch
 
 # Subject Model
+
 class Subject(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     subject_name = db.Column(db.String(100), nullable=False)
@@ -82,10 +83,11 @@ class Subject(db.Model):
     staff_id = db.Column(db.Integer, db.ForeignKey('college_staff.id'), nullable=False)
     subject_code = db.Column(db.String(100), nullable=False)
     college_id = db.Column(db.Integer, db.ForeignKey('college.id'), nullable=False)
-
+   
     user = db.relationship('User', backref=db.backref('subjects', lazy=True))
     staff = db.relationship('CollegeStaff', backref=db.backref('subjects', lazy=True))
     college = db.relationship('College', backref=db.backref('subjects', lazy=True))
+
 
 # SubjectList Model
 class SubjectList(db.Model):
@@ -200,15 +202,15 @@ class CoAttainment(db.Model):
 
     college = db.relationship('College', backref=db.backref('co_attainments', lazy=True))
 
-
-# New InternalAssessment Model
 class InternalAssessment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     college_id = db.Column(db.Integer, db.ForeignKey('college.id'), nullable=False)
     subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)
     section_id = db.Column(db.Integer, db.ForeignKey('section.id'), nullable=False)
     assessment_instance_ids = db.Column(db.JSON, nullable=False)
+    assessment_instance_ids_practical = db.Column(db.JSON, nullable=False) 
     co_values = db.Column(db.JSON, nullable=True)   
+    weightage_co_values = db.Column(db.JSON, nullable=True)  # JSON column to store weightage CO values
     target_counts = db.Column(db.JSON, nullable=True)  
     college = db.relationship('College', backref=db.backref('internal_assessments', lazy=True))
     subject = db.relationship('Subject', backref=db.backref('internal_assessments', lazy=True))
@@ -216,3 +218,33 @@ class InternalAssessment(db.Model):
 
     def __repr__(self):
         return f"InternalAssessment(college_id={self.college_id}, subject_id={self.subject_id}, section_id={self.section_id})"
+    
+
+
+class SemesterEndExam(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    college_id = db.Column(db.Integer, db.ForeignKey('college.id'), nullable=False)
+    subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)
+    section_id = db.Column(db.Integer, db.ForeignKey('section.id'), nullable=False)
+    co_values = db.Column(db.JSON, nullable=True)   
+    target_counts = db.Column(db.JSON, nullable=True)  
+    college = db.relationship('College', backref=db.backref('semester_end_exams', lazy=True))
+    subject = db.relationship('Subject', backref=db.backref('semester_end_exams', lazy=True))
+    section = db.relationship('Section', backref=db.backref('semester_end_exams', lazy=True))
+
+    def __repr__(self):
+        return f"SemesterEndExam(college_id={self.college_id}, subject_id={self.subject_id}, section_id={self.section_id})"
+
+class CourseExitSurvey(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    college_id = db.Column(db.Integer, db.ForeignKey('college.id'), nullable=False)
+    subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)
+    section_id = db.Column(db.Integer, db.ForeignKey('section.id'), nullable=False)
+    co_values = db.Column(db.JSON, nullable=True)   
+    target_counts = db.Column(db.JSON, nullable=True)  
+    college = db.relationship('College', backref=db.backref('course_exit_surveys', lazy=True))
+    subject = db.relationship('Subject', backref=db.backref('course_exit_surveys', lazy=True))
+    section = db.relationship('Section', backref=db.backref('course_exit_surveys', lazy=True))
+
+    def __repr__(self):
+        return f"CourseExitSurvey(college_id={self.college_id}, subject_id={self.subject_id}, section_id={self.section_id})"

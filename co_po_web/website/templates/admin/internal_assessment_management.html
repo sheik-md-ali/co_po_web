@@ -225,16 +225,31 @@
         <div>
             <h2>Select Assessment Instances:</h2>
             <form method="POST" action="{{ url_for('admin_routes.internal_assessment_management') }}">
+                <h3>Non-Practical Assessments</h3>
                 {% for instance in assessment_instances %}
-                <div>
-                    <input type="checkbox" name="assessment_instance_ids" value="{{ instance.id }}" id="instance_{{ instance.id }}"
-                           {% if instance.id in selected_assessment_instance_ids %}checked{% endif %}>
-                    <label class="checkbox-label" for="instance_{{ instance.id }}">{{ instance.name }}</label>
-                </div>
+                    {% if not instance.is_practical %}
+                    <div>
+                        <input type="checkbox" name="assessment_instance_ids" value="{{ instance.id }}" id="instance_{{ instance.id }}"
+                            {% if instance.id in selected_assessment_instance_ids %}checked{% endif %}>
+                        <label class="checkbox-label" for="instance_{{ instance.id }}">{{ instance.name }}</label>
+                    </div>
+                    {% endif %}
                 {% endfor %}
+                
+                <h3>Practical Assessments</h3>
+                {% for instance in assessment_instances %}
+                    {% if instance.is_practical %}
+                    <div>
+                        <input type="checkbox" name="assessment_instance_ids_practical" value="{{ instance.id }}" id="instance_{{ instance.id }}"
+                            {% if instance.id in selected_assessment_instance_ids_practical %}checked{% endif %}>
+                        <label class="checkbox-label" for="instance_{{ instance.id }}">{{ instance.name }}</label>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+                
                 <button type="submit" name="submit_internal_assessment">Submit</button>
             </form>
-        </div>
+        </div>        
         {% endif %}
     </form>
 </body>

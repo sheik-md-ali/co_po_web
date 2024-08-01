@@ -547,7 +547,6 @@ def co_attainment_submit():
     return redirect(url_for('admin_routes.co_attainment'))
 
 
-
 @admin_routes.route('/admin/internal_assessment_management', methods=['GET', 'POST'])
 @login_required
 def internal_assessment_management():
@@ -560,6 +559,7 @@ def internal_assessment_management():
     selected_subject_id = request.form.get('subject') or request.args.get('subject')
     selected_section_id = request.form.get('section') or request.args.get('section')
     selected_assessment_instance_ids = []
+    selected_assessment_instance_ids_practical = []
 
     if selected_college_id:
         subjects = SubjectList.query.filter_by(college_id=selected_college_id).all()
@@ -570,14 +570,12 @@ def internal_assessment_management():
             sections = Section.query.filter_by(subject_code=subject.subject_code).all()
 
     if selected_section_id:
-        # Fetch all assessment instances for the selected subject code and section
         assessment_instances = AssessmentInstance.query.filter_by(
             college_id=selected_college_id,
             subject_id=selected_subject_id,
             section_id=selected_section_id
         ).all()
 
-        # Fetch existing internal assessments for the selected subject and section
         internal_assessment = InternalAssessment.query.filter_by(
             college_id=selected_college_id,
             subject_id=selected_subject_id,
@@ -586,30 +584,46 @@ def internal_assessment_management():
 
         if internal_assessment:
             existing_assessment_instance_ids = internal_assessment.assessment_instance_ids
+            existing_assessment_instance_ids_practical = internal_assessment.assessment_instance_ids_practical
             existing_assessment_instances = AssessmentInstance.query.filter(
-                AssessmentInstance.id.in_(existing_assessment_instance_ids)
+                AssessmentInstance.id.in_(existing_assessment_instance_ids + existing_assessment_instance_ids_practical)
             ).all()
+
+        # Classify assessment instances as practical or non-practical
+        practical_ia_component_ids = [ia.id for ia in IAComponent.query.filter_by(name='Practical').all()]
+        
+        for instance in assessment_instances:
+            # Access the related Assessment to get the ia_component_id
+            assessment = Assessment.query.get(instance.assessment_id)
+            
+            if assessment:
+                # Check if the IAComponent is practical
+                instance.is_practical = assessment.ia_component_id in practical_ia_component_ids
+            else:
+                instance.is_practical = False  # If no related assessment, default to non-practical
 
     if request.method == 'POST':
         if 'submit_internal_assessment' in request.form:
             selected_assessment_instance_ids = request.form.getlist('assessment_instance_ids')
+            selected_assessment_instance_ids_practical = request.form.getlist('assessment_instance_ids_practical')
 
             if not internal_assessment:
                 internal_assessment = InternalAssessment(
                     college_id=selected_college_id,
                     subject_id=selected_subject_id,
                     section_id=selected_section_id,
-                    assessment_instance_ids=selected_assessment_instance_ids
+                    assessment_instance_ids=selected_assessment_instance_ids,
+                    assessment_instance_ids_practical=selected_assessment_instance_ids_practical
                 )
                 db.session.add(internal_assessment)
             else:
                 internal_assessment.assessment_instance_ids = selected_assessment_instance_ids
+                internal_assessment.assessment_instance_ids_practical = selected_assessment_instance_ids_practical
 
             db.session.commit()
             flash('Internal Assessment updated successfully.', 'success')
-            return redirect(url_for('admin_routes.internal_assessment_management'))
+            return redirect(url_for('admin_routes.internal_assessment_management', college=selected_college_id, subject=selected_subject_id, section=selected_section_id))
 
-    # Flash messages for specific scenarios
     if selected_section_id and not assessment_instances:
         flash('No assessments exist for this section.', 'info')
 
@@ -623,5 +637,6 @@ def internal_assessment_management():
         selected_college_id=selected_college_id,
         selected_subject_id=selected_subject_id,
         selected_section_id=selected_section_id,
-        selected_assessment_instance_ids=selected_assessment_instance_ids
+        selected_assessment_instance_ids=selected_assessment_instance_ids,
+        selected_assessment_instance_ids_practical=selected_assessment_instance_ids_practical
     )

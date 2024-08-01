@@ -140,13 +140,11 @@
     </style>
 </head>
 <body>
-
     <div class="container">
-        
         <div class="section">
-                <a href="{{ url_for('auth.back_to_dashboard') }}" class="back-button">Back to Dashboard</a>
+            <a href="{{ url_for('auth.back_to_dashboard') }}" class="back-button">Back to Dashboard</a>
 
-            <h2>Upload excel file</h2>
+            <h2>Upload Excel File</h2>
             <h3>Upload the marks data by selecting and downloading the assessment template given below</h3>
 
             <!-- Flash Messages -->
@@ -160,32 +158,34 @@
             {% endif %}
             {% endwith %}
 
-            <!-- Form for selecting Subject, Section, and Assessment Instance -->
+            <!-- Form for selecting Subject, Section, Assessment Type, and Assessment Instance -->
             <form method="post" action="{{ url_for('user_routes.upload_excel') }}">
+                <!-- Subject Dropdown -->
                 <div>
                     <label for="subjectCode">Subject Code:</label>
                     <select id="subjectCode" name="subject_code" onchange="this.form.submit()">
                         <option value="">Select Subject</option>
                         {% for subject in subjects %}
-                            <option value="{{ subject }}" {% if selected_subject_code == subject %}selected{% endif %}>{{ subject }}</option>
+                        <option value="{{ subject }}" {% if selected_subject_code == subject %}selected{% endif %}>{{ subject }}</option>
                         {% endfor %}
                     </select>
                 </div>
+
+                <!-- Section Dropdown -->
                 {% if sections %}
                 <div>
                     <label for="section">Section:</label>
-                    <select id="section" name="section" onchange="this.form.submit()">
+                    <select id="section" name="section" onchange="handleSectionChange(this)">
                         <option value="">Select Section</option>
                         {% for section in sections %}
-                        <option value="{{ section.name }}" {% if selected_section_name == section.name %}selected{% endif %}>
-                            {{ section.name }}
-                        </option>
+                        <option value="{{ section.name }}" {% if selected_section_name == section.name %}selected{% endif %}>{{ section.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
                 {% endif %}
-                <!-- New dropdown for Assessment Type -->
-                <div>
+
+                <!-- Assessment Type Dropdown (Initially hidden) -->
+                <div id="assessmentTypeDiv" style="display: none;">
                     <label for="assessmentType">Assessment Type:</label>
                     <select id="assessmentType" name="assessment_type" onchange="this.form.submit()">
                         <option value="">Select Assessment Type</option>
@@ -194,32 +194,29 @@
                         <option value="course_exit_survey" {% if selected_assessment_type == 'course_exit_survey' %}selected{% endif %}>Course Exit Survey</option>
                     </select>
                 </div>
+
+                <!-- Assessment Instance Dropdown -->
                 {% if assessment_instances %}
                 <div>
                     <label for="assessmentInstance">Assessment Instance:</label>
                     <select id="assessmentInstance" name="assessment_instance" onchange="this.form.submit()">
                         <option value="">Select Assessment Instance</option>
                         {% for instance in assessment_instances %}
-                        <option value="{{ instance.id }}" {% if selected_assessment_instance_id == instance.id %}selected{% endif %}>
-                            {{ instance.name }}
-                        </option>
+                        <option value="{{ instance.id }}" {% if selected_assessment_instance_id == instance.id %}selected{% endif %}>{{ instance.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
                 {% endif %}
-                {% if selected_subject_code and selected_section_name and not assessment_instances %}
-                <p>No assessments exist for the selected subject and section.</p>
-                {% endif %}
+
+                <!-- Assessment Details -->
                 {% if assessment_details %}
                 <div id="assessmentDetails">
                     <h3>Assessment Name: {{ assessment_details.name }}</h3>
                     <p>Max Marks: {{ assessment_details.max_marks }}</p>
                 </div>
                 {% endif %}
-                
-                
             </form>
-            
+
             <!-- Form for uploading Excel file -->
             {% if selected_assessment_type %}
             <form method="post" action="{{ url_for('user_routes.upload_excel_file') }}" enctype="multipart/form-data">
@@ -239,7 +236,20 @@
                 <a href="{{ url_for('user_routes.download_template', assessment_type=selected_assessment_type, assessment_instance_id=selected_assessment_instance_id) }}" download>Download Template</a>
             </div>
             {% endif %}
-            
+        </div>
     </div>
+
+    <!-- JavaScript to show the Assessment Type dropdown after selecting Section -->
+    <script>
+        function handleSectionChange(selectElement) {
+            var assessmentTypeDiv = document.getElementById('assessmentTypeDiv');
+            if (selectElement.value) {
+                assessmentTypeDiv.style.display = 'block';
+            } else {
+                assessmentTypeDiv.style.display = 'none';
+            }
+        }
+    </script>
 </body>
+
 </html>

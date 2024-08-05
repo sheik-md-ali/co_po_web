@@ -159,11 +159,11 @@
             {% endwith %}
 
             <!-- Form for selecting Subject, Section, Assessment Type, and Assessment Instance -->
-            <form method="post" action="{{ url_for('user_routes.upload_excel') }}">
+            <form id="mainForm" method="post" action="{{ url_for('user_routes.upload_excel') }}">
                 <!-- Subject Dropdown -->
                 <div>
                     <label for="subjectCode">Subject Code:</label>
-                    <select id="subjectCode" name="subject_code" onchange="this.form.submit()">
+                    <select id="subjectCode" name="subject_code" onchange="handleSubjectChange()">
                         <option value="">Select Subject</option>
                         {% for subject in subjects %}
                         <option value="{{ subject }}" {% if selected_subject_code == subject %}selected{% endif %}>{{ subject }}</option>
@@ -175,7 +175,7 @@
                 {% if sections %}
                 <div>
                     <label for="section">Section:</label>
-                    <select id="section" name="section" onchange="handleSectionChange(this)">
+                    <select id="section" name="section" onchange="handleSectionChange()">
                         <option value="">Select Section</option>
                         {% for section in sections %}
                         <option value="{{ section.name }}" {% if selected_section_name == section.name %}selected{% endif %}>{{ section.name }}</option>
@@ -185,9 +185,9 @@
                 {% endif %}
 
                 <!-- Assessment Type Dropdown -->
-                <div id="assessmentTypeDiv">
+                <div id="assessmentTypeDiv" style="display: none;">
                     <label for="assessmentType">Assessment Type:</label>
-                    <select id="assessmentType" name="assessment_type" onchange="this.form.submit()">
+                    <select id="assessmentType" name="assessment_type" onchange="handleAssessmentTypeChange()">
                         <option value="">Select Assessment Type</option>
                         <option value="assessments" {% if selected_assessment_type == 'assessments' %}selected{% endif %}>Assessments</option>
                         <option value="semester_end_exam" {% if selected_assessment_type == 'semester_end_exam' %}selected{% endif %}>Semester End Exam</option>
@@ -197,9 +197,9 @@
 
                 <!-- Assessment Instance Dropdown -->
                 {% if assessment_instances %}
-                <div>
+                <div id="assessmentInstanceDiv">
                     <label for="assessmentInstance">Assessment Instance:</label>
-                    <select id="assessmentInstance" name="assessment_instance" onchange="this.form.submit()">
+                    <select id="assessmentInstance" name="assessment_instance">
                         <option value="">Select Assessment Instance</option>
                         {% for instance in assessment_instances %}
                         <option value="{{ instance.id }}" {% if selected_assessment_instance_id == instance.id %}selected{% endif %}>{{ instance.name }}</option>
@@ -254,14 +254,34 @@
 
     <!-- JavaScript to handle showing/hiding elements based on selections -->
     <script>
-        function handleSectionChange(selectElement) {
+        function handleSubjectChange() {
+            document.getElementById('mainForm').submit();
+        }
+
+        function handleSectionChange() {
+            var section = document.getElementById('section').value;
             var assessmentTypeDiv = document.getElementById('assessmentTypeDiv');
-            if (selectElement.value) {
+            if (section) {
                 assessmentTypeDiv.style.display = 'block';
             } else {
                 assessmentTypeDiv.style.display = 'none';
             }
         }
+
+        function handleAssessmentTypeChange() {
+            document.getElementById('mainForm').submit();
+        }
+
+        window.onload = function() {
+            var section = document.getElementById('section').value;
+            var assessmentType = document.getElementById('assessmentType').value;
+            if (section) {
+                document.getElementById('assessmentTypeDiv').style.display = 'block';
+            }
+            if (assessmentType) {
+                document.getElementById('assessmentInstanceDiv').style.display = 'block';
+            }
+        };
     </script>
 </body>
 </html>

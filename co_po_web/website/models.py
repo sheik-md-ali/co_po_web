@@ -202,6 +202,7 @@ class CoAttainment(db.Model):
 
     college = db.relationship('College', backref=db.backref('co_attainments', lazy=True))
 
+
 class InternalAssessment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     college_id = db.Column(db.Integer, db.ForeignKey('college.id'), nullable=False)

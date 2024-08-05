@@ -184,8 +184,8 @@
                 </div>
                 {% endif %}
 
-                <!-- Assessment Type Dropdown (Initially hidden) -->
-                <div id="assessmentTypeDiv" style="display: none;">
+                <!-- Assessment Type Dropdown -->
+                <div id="assessmentTypeDiv">
                     <label for="assessmentType">Assessment Type:</label>
                     <select id="assessmentType" name="assessment_type" onchange="this.form.submit()">
                         <option value="">Select Assessment Type</option>
@@ -215,6 +215,19 @@
                     <p>Max Marks: {{ assessment_details.max_marks }}</p>
                 </div>
                 {% endif %}
+                
+                <!-- Semester End Exam and Course Exit Survey Details -->
+                {% if selected_assessment_type == 'semester_end_exam' %}
+                <div id="semesterEndExamDetails">
+                    <h3>Semester End Exam</h3>
+                    <p>Details about the Semester End Exam...</p>
+                </div>
+                {% elif selected_assessment_type == 'course_exit_survey' %}
+                <div id="courseExitSurveyDetails">
+                    <h3>Course Exit Survey</h3>
+                    <p>Details about the Course Exit Survey...</p>
+                </div>
+                {% endif %}
             </form>
 
             <!-- Form for uploading Excel file -->
@@ -239,7 +252,7 @@
         </div>
     </div>
 
-    <!-- JavaScript to show the Assessment Type dropdown after selecting Section -->
+    <!-- JavaScript to handle showing/hiding elements based on selections -->
     <script>
         function handleSectionChange(selectElement) {
             var assessmentTypeDiv = document.getElementById('assessmentTypeDiv');
@@ -251,5 +264,4 @@
         }
     </script>
 </body>
-
 </html>

@@ -1,13 +1,13 @@
 @import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800&display=swap");
 
 :root {
-    --c-text-primary: #282a32;
-    --c-text-secondary: #686b87;
-    --c-text-action: #404089;
-    --c-accent-primary: #434ce8;
-    --c-border-primary: #eff1f6;
+    --c-text-primary: #2c3e50; /* Darker text color for better contrast */
+    --c-text-secondary: #7f8c8d; /* Softer secondary text color */
+    --c-text-action: #2b078f; /* More vibrant action color */
+    --c-accent-primary: #2e10b3; /* Lighter accent color */
+    --c-border-primary: #ecf0f1; /* Lighter border color */
     --c-background-primary: #ffffff;
-    --c-background-secondary: #f3f4f6;
+    --c-background-secondary: #f5f5f5; /* Softer background color */
     --c-background-tertiary: #ecf3fe;
     --c-background-quaternary: #e9ecf4;
     --c-background-card: #ffffff;
@@ -55,8 +55,13 @@ img {
 
 .header-logo {
     margin-right: 2.5rem;
-    width: 40px; /* Smaller logo */
-    height: 40px;
+}
+
+.header-logo img {
+    width: 50px; /* Default size for desktop */
+    height: 50px;
+    border-radius: 50%;
+    border: 2px solid var(--c-border-primary); /* Add border around the logo */
 }
 
 .header-navigation {
@@ -72,34 +77,32 @@ img {
 
 .header-navigation a {
     text-decoration: none;
-    color: var(--c-text-action);
+    color: #ffffff;
     font-weight: 600;
     transition: 0.15s ease;
     padding: 0.5rem 1rem;
     border-radius: 9999px;
     background-color: var(--c-accent-primary);
-    color: #ffffff;
 }
 
 .header-navigation a:hover,
 .header-navigation a:focus {
-    background-color: #2d37f5;
+    background-color: #0d0679;
 }
 
 .menu-button {
     display: none;
     text-decoration: none;
-    color: var(--c-text-action);
+    color: #ffffff;
     font-weight: 600;
     padding: 0.5rem 1rem;
     border-radius: 9999px;
     background-color: var(--c-accent-primary);
-    color: #ffffff;
 }
 
 .menu-button:hover,
 .menu-button:focus {
-    background-color: #2d37f5;
+    background-color: hsl(244, 94%, 26%);
 }
 
 .main {
@@ -136,18 +139,21 @@ img {
     transition: 0.25s ease;
     border: 1px solid var(--c-accent-primary);
     box-shadow: 0 1px 2px 0 rgb(0 0 0 / 5%);
-    & + * {
-        margin-left: 1rem;
-    }
-    &:hover,
-    &:focus {
-        color: var(--c-background-primary);
-        background-color: #2d37f5;
-        box-shadow: 0 2px 6px 0 rgb(0 0 0 / 15%);
-    }
-    & > * + * {
-        margin-left: 0.75rem;
-    }
+}
+
+.button + * {
+    margin-left: 1rem;
+}
+
+.button:hover,
+.button:focus {
+    color: var(--c-background-primary);
+    background-color: #1e0299;
+    box-shadow: 0 2px 6px 0 rgb(0 0 0 / 15%);
+}
+
+.button > * + * {
+    margin-left: 0.75rem;
 }
 
 .content {
@@ -157,9 +163,10 @@ img {
 
 .content-panel {
     padding-right: 2rem;
-    & > * + * {
-        margin-top: 1rem;
-    }
+}
+
+.content-panel > * + * {
+    margin-top: 1rem;
 }
 
 .content-main {
@@ -193,9 +200,10 @@ img {
 .card-header div {
     display: flex;
     align-items: center;
-    h3 {
-        margin-left: 1rem;
-    }
+}
+
+.card-header h3 {
+    margin-left: 1rem;
 }
 
 .card {
@@ -213,20 +221,29 @@ img {
 
 .card-footer a {
     text-decoration: none;
-    font-weight: 500;
-    color: var(--c-text-action);
-    &:hover,
-    &:focus {
-        color: var(--c-accent-primary);
-    }
+    font-weight: 600;
+    color: #ffffff;
+    background-color: var(--c-accent-primary);
+    border-radius: 9999px;
+    padding: 0.5rem 1rem;
+    display: inline-block;
+    text-align: center;
+    transition: 0.25s ease;
+}
+
+.card-footer a:hover,
+.card-footer a:focus {
+    background-color: #2980b9;
+    box-shadow: 0 2px 6px 0 rgb(0 0 0 / 15%);
 }
 
 .card {
     transition: 0.25s ease;
-    &:hover,
-    &:focus {
-        box-shadow: 0 4px 20px 0 rgb(0 0 0 / 15%);
-    }
+}
+
+.card:hover,
+.card:focus {
+    box-shadow: 0 4px 20px 0 rgb(0 0 0 / 15%);
 }
 
 .vertical-tabs {
@@ -252,8 +269,8 @@ img {
 }
 
 .card-header span {
-    width: 40px; /* Smaller logo */
-    height: 40px; /* Smaller logo */
+    width: 40px; /* Adjusted for circular shape */
+    height: 40px; /* Adjusted for circular shape */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -329,9 +346,9 @@ img {
     .content-header-actions a.button:nth-child(1) {
         margin-right: 2rem;
         margin-left: auto;
-        margin-top: -55px;
+        margin-top: -50px;
     }
-    .content {
-        margin-top: 20px;
+    .content-header-actions a.button:nth-child(2) {
+        margin-right: 2rem;
     }
 }

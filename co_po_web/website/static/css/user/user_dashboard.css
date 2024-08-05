@@ -7,9 +7,10 @@
     --c-accent-primary: #434ce8;
     --c-border-primary: #eff1f6;
     --c-background-primary: #ffffff;
-    --c-background-secondary: #fdfcff;
+    --c-background-secondary: #f3f4f6;
     --c-background-tertiary: #ecf3fe;
     --c-background-quaternary: #e9ecf4;
+    --c-background-card: #ffffff;
 }
 
 body {
@@ -23,6 +24,7 @@ body {
 img {
     display: block;
     max-width: 100%;
+    border-radius: 50%;
 }
 
 :focus {
@@ -53,6 +55,8 @@ img {
 
 .header-logo {
     margin-right: 2.5rem;
+    width: 40px; /* Smaller logo */
+    height: 40px;
 }
 
 .header-navigation {
@@ -111,7 +115,6 @@ img {
     display: flex;
     align-items: center;
     margin-top: -2px;
-    
 }
 
 .content-header-actions > * + * {
@@ -196,7 +199,7 @@ img {
 }
 
 .card {
-    background-color: var(--c-background-primary);
+    background-color: var(--c-background-card);
     padding: 2rem;
     border-radius: 1rem;
     box-shadow: 0 1px 2px 0 rgb(0 0 0 / 5%);
@@ -208,15 +211,13 @@ img {
     margin-bottom: 1.25rem;
 }
 
-.card-footer {
-    a {
-        text-decoration: none;
-        font-weight: 500;
-        color: var(--c-text-action);
-        &:hover,
-        &:focus {
-            color: var(--c-accent-primary);
-        }
+.card-footer a {
+    text-decoration: none;
+    font-weight: 500;
+    color: var(--c-text-action);
+    &:hover,
+    &:focus {
+        color: var(--c-accent-primary);
     }
 }
 
@@ -246,18 +247,18 @@ img {
 
 .vertical-tabs a.active,
 .vertical-tabs a:hover {
-    color: var (--c-background-primary);
+    color: var(--c-background-primary);
     background-color: var(--c-accent-primary);
 }
 
 .card-header span {
-    width: 50px;
-    height: 50px;
+    width: 40px; /* Smaller logo */
+    height: 40px; /* Smaller logo */
     display: flex;
     align-items: center;
     justify-content: center;
     background: #f3f3f9;
-    border-radius: 0.75rem;
+    border-radius: 50%;
 }
 
 .card-header span img {
@@ -329,9 +330,8 @@ img {
         margin-right: 2rem;
         margin-left: auto;
         margin-top: -55px;
-        
     }
-    .content{
-      margin-top: 20px;
+    .content {
+        margin-top: 20px;
     }
 }

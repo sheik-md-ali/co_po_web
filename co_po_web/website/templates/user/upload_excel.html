@@ -140,13 +140,11 @@
     </style>
 </head>
 <body>
-
     <div class="container">
-        
         <div class="section">
-                <a href="{{ url_for('auth.back_to_dashboard') }}" class="back-button">Back to Dashboard</a>
+            <a href="{{ url_for('auth.back_to_dashboard') }}" class="back-button">Back to Dashboard</a>
 
-            <h2>Upload excel file</h2>
+            <h2>Upload Excel File</h2>
             <h3>Upload the marks data by selecting and downloading the assessment template given below</h3>
 
             <!-- Flash Messages -->
@@ -160,59 +158,83 @@
             {% endif %}
             {% endwith %}
 
-            <!-- Form for selecting Subject, Section, and Assessment Instance -->
-            <form method="post" action="{{ url_for('user_routes.upload_excel') }}">
+            <!-- Form for selecting Subject, Section, Assessment Type, and Assessment Instance -->
+            <form id="mainForm" method="post" action="{{ url_for('user_routes.upload_excel') }}">
+                <!-- Subject Dropdown -->
                 <div>
                     <label for="subjectCode">Subject Code:</label>
-                    <select id="subjectCode" name="subject_code" onchange="this.form.submit()">
+                    <select id="subjectCode" name="subject_code" onchange="handleSubjectChange()">
                         <option value="">Select Subject</option>
                         {% for subject in subjects %}
-                            <option value="{{ subject }}" {% if selected_subject_code == subject %}selected{% endif %}>{{ subject }}</option>
+                        <option value="{{ subject }}" {% if selected_subject_code == subject %}selected{% endif %}>{{ subject }}</option>
                         {% endfor %}
                     </select>
-                </div>                
+                </div>
+
+                <!-- Section Dropdown -->
                 {% if sections %}
                 <div>
                     <label for="section">Section:</label>
-                    <select id="section" name="section" onchange="this.form.submit()">
+                    <select id="section" name="section" onchange="handleSectionChange()">
                         <option value="">Select Section</option>
                         {% for section in sections %}
-                        <option value="{{ section.name }}" {% if selected_section_name == section.name %}selected{% endif %}>
-                            {{ section.name }}
-                        </option>
+                        <option value="{{ section.name }}" {% if selected_section_name == section.name %}selected{% endif %}>{{ section.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
                 {% endif %}
+
+                <!-- Assessment Type Dropdown -->
+                <div id="assessmentTypeDiv" style="display: none;">
+                    <label for="assessmentType">Assessment Type:</label>
+                    <select id="assessmentType" name="assessment_type" onchange="handleAssessmentTypeChange()">
+                        <option value="">Select Assessment Type</option>
+                        <option value="assessments" {% if selected_assessment_type == 'assessments' %}selected{% endif %}>Assessments</option>
+                        <option value="semester_end_exam" {% if selected_assessment_type == 'semester_end_exam' %}selected{% endif %}>Semester End Exam</option>
+                        <option value="course_exit_survey" {% if selected_assessment_type == 'course_exit_survey' %}selected{% endif %}>Course Exit Survey</option>
+                    </select>
+                </div>
+
+                <!-- Assessment Instance Dropdown -->
                 {% if assessment_instances %}
-                <div>
+                <div id="assessmentInstanceDiv">
                     <label for="assessmentInstance">Assessment Instance:</label>
-                    <select id="assessmentInstance" name="assessment_instance" onchange="this.form.submit()">
+                    <select id="assessmentInstance" name="assessment_instance">
                         <option value="">Select Assessment Instance</option>
                         {% for instance in assessment_instances %}
-                        <option value="{{ instance.id }}" {% if selected_assessment_instance_id == instance.id %}selected{% endif %}>
-                            {{ instance.name }}
-                        </option>
+                        <option value="{{ instance.id }}" {% if selected_assessment_instance_id == instance.id %}selected{% endif %}>{{ instance.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
                 {% endif %}
-                {% if selected_subject_code and selected_section_name and not assessment_instances %}
-                <p>No assessments exist for the selected subject and section.</p>
-                {% endif %}
+
+                <!-- Assessment Details -->
                 {% if assessment_details %}
                 <div id="assessmentDetails">
                     <h3>Assessment Name: {{ assessment_details.name }}</h3>
                     <p>Max Marks: {{ assessment_details.max_marks }}</p>
                 </div>
                 {% endif %}
+                
+                <!-- Semester End Exam and Course Exit Survey Details -->
+                {% if selected_assessment_type == 'semester_end_exam' %}
+                <div id="semesterEndExamDetails">
+                    <h3>Semester End Exam</h3>
+                    <p>Details about the Semester End Exam...</p>
+                </div>
+                {% elif selected_assessment_type == 'course_exit_survey' %}
+                <div id="courseExitSurveyDetails">
+                    <h3>Course Exit Survey</h3>
+                    <p>Details about the Course Exit Survey...</p>
+                </div>
+                {% endif %}
             </form>
 
             <!-- Form for uploading Excel file -->
-            {% if assessment_details %}
+            {% if selected_assessment_type %}
             <form method="post" action="{{ url_for('user_routes.upload_excel_file') }}" enctype="multipart/form-data">
                 <div>
-                    <label for="assessmentfile">Assessment file (Excel File):</label>
+                    <label for="assessmentfile">Upload File (Excel File):</label>
                     <input type="file" id="assessmentfile" name="assessmentfile" accept=".xls,.xlsx" required>
                 </div>
                 <div class="save-submit-buttons">
@@ -220,13 +242,46 @@
                     <button type="submit" name="action" value="submit">Submit</button>
                 </div>
                 <input type="hidden" name="assessment_instance" value="{{ selected_assessment_instance_id }}">
+                <input type="hidden" name="assessment_type" value="{{ selected_assessment_type }}">
             </form>
             <div class="template-download">
                 <p>Download the template Excel file:</p>
-                <a href="{{ url_for('user_routes.download_template', assessment_instance_id=selected_assessment_instance_id) }}" download>Download Template</a>
+                <a href="{{ url_for('user_routes.download_template', assessment_type=selected_assessment_type, assessment_instance_id=selected_assessment_instance_id) }}" download>Download Template</a>
             </div>
             {% endif %}
         </div>
     </div>
+
+    <!-- JavaScript to handle showing/hiding elements based on selections -->
+    <script>
+        function handleSubjectChange() {
+            document.getElementById('mainForm').submit();
+        }
+
+        function handleSectionChange() {
+            var section = document.getElementById('section').value;
+            var assessmentTypeDiv = document.getElementById('assessmentTypeDiv');
+            if (section) {
+                assessmentTypeDiv.style.display = 'block';
+            } else {
+                assessmentTypeDiv.style.display = 'none';
+            }
+        }
+
+        function handleAssessmentTypeChange() {
+            document.getElementById('mainForm').submit();
+        }
+
+        window.onload = function() {
+            var section = document.getElementById('section').value;
+            var assessmentType = document.getElementById('assessmentType').value;
+            if (section) {
+                document.getElementById('assessmentTypeDiv').style.display = 'block';
+            }
+            if (assessmentType) {
+                document.getElementById('assessmentInstanceDiv').style.display = 'block';
+            }
+        };
+    </script>
 </body>
 </html>

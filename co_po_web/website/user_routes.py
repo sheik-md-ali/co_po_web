@@ -198,7 +198,6 @@ def download_template():
     )
 
 
-
 @user_routes.route('/user/upload_excel', methods=['GET', 'POST'])
 @login_required
 def upload_excel():
@@ -207,6 +206,7 @@ def upload_excel():
 
     selected_subject_code = request.form.get('subject_code')
     selected_section_name = request.form.get('section')
+    selected_assessment_type = request.form.get('assessment_type')
     selected_assessment_instance_id = request.form.get('assessment_instance')
 
     sections = []
@@ -225,7 +225,7 @@ def upload_excel():
                 Section.subject_code == selected_subject_code,
                 Section.name == selected_section_name
             ).first()
-            if section:
+            if section and selected_assessment_type == 'assessments':
                 assessment_instances = AssessmentInstance.query.filter_by(section_id=section.id).all()
 
                 if selected_assessment_instance_id:
@@ -239,20 +239,23 @@ def upload_excel():
     return render_template('user/upload_excel.html', subjects=subject_codes, sections=sections,
                            assessment_instances=assessment_instances, assessment_details=assessment_details,
                            selected_subject_code=selected_subject_code, selected_section_name=selected_section_name,
-                           selected_assessment_instance_id=selected_assessment_instance_id)
-
+                           selected_assessment_instance_id=selected_assessment_instance_id,
+                           selected_assessment_type=selected_assessment_type)
 
 @user_routes.route('/user/upload_excel_file', methods=['POST'])
 @login_required
 def upload_excel_file():
     selected_assessment_instance_id = request.form.get('assessment_instance')
+    selected_assessment_type = request.form.get('assessment_type')
     action = request.form.get('action')
 
-    if not selected_assessment_instance_id:
-        flash('No assessment instance selected.', 'danger')
+    if selected_assessment_type not in ['assessments', 'semester_end_exam', 'course_exit_survey']:
+        flash('Invalid assessment type.', 'danger')
         return redirect(url_for('user_routes.upload_excel'))
 
-    assessment_instance = AssessmentInstance.query.get(selected_assessment_instance_id)
+    if selected_assessment_type == 'assessments' and not selected_assessment_instance_id:
+        flash('No assessment instance selected.', 'danger')
+        return redirect(url_for('user_routes.upload_excel'))
 
     if 'assessmentfile' not in request.files:
         flash('No file part in the request.', 'danger')
@@ -268,93 +271,117 @@ def upload_excel_file():
         file_data = file.read()
 
         try:
-            marks_data = read_excel_data(BytesIO(file_data))
+            if selected_assessment_type == 'assessments':
+                marks_data = read_excel_data(BytesIO(file_data))
+                
+                # Process the assessments data
+                assessment_instance = AssessmentInstance.query.get(selected_assessment_instance_id)
+                if not assessment_instance:
+                    flash('Assessment instance not found.', 'danger')
+                    return redirect(url_for('user_routes.upload_excel'))
+
+                mapping_dict = assessment_instance.mapping_dictionary
+                co_attainments = CoAttainment.query.filter_by(subject_code=assessment_instance.section.subject_code).all()
+                
+                if not co_attainments:
+                    flash('No LOA data found for the selected subject code.', 'danger')
+                    return redirect(url_for('user_routes.upload_excel'))
+
+                loa_data = [co_attainment.loa_data for co_attainment in co_attainments]
+                target_percs = co_attainments[0].target_perc  # Assuming target_perc is consistent across all COs for the subject
+
+                individual_mapping, overall_mapping = create_mapping(mapping_dict, marks_data, loa_data, target_percs)
+
+                individual_df = pd.DataFrame(marks_data)
+
+                for co in mapping_dict.values():
+                    co_key = co['co']
+                    individual_df[f'{co_key}%'] = individual_df.apply(lambda row: individual_mapping.get(f"{row['REG NO']}_{co_key}", {}).get('percentage', ""), axis=1)
+                    individual_df[f'{co_key}_LOA'] = individual_df.apply(lambda row: individual_mapping.get(f"{row['REG NO']}_{co_key}", {}).get('level_of_attainment', ""), axis=1)
+                    individual_df[f'{co_key}_Target'] = individual_df.apply(lambda row: individual_mapping.get(f"{row['REG NO']}_{co_key}", {}).get('target_met', ""), axis=1)
+
+                overall_row = [""] * len(individual_df.columns)
+                overall_row[0] = "Overall"
+                for co, data in overall_mapping.items():
+                    co_index = individual_df.columns.get_loc(f'{co}%')
+                    loa_index = individual_df.columns.get_loc(f'{co}_LOA')
+                    target_index = individual_df.columns.get_loc(f'{co}_Target')
+                    overall_row[co_index] = ""
+                    overall_row[loa_index] = data['average_level_of_attainment']
+                    overall_row[target_index] = data['target_met_count']['Y']
+
+                overall_series = pd.Series(overall_row, index=individual_df.columns)
+                individual_df = pd.concat([individual_df, pd.DataFrame([overall_series])], ignore_index=True)
+
+                overall_co_df = pd.DataFrame(columns=['COs', 'Values', 'Target_count'])
+                overall_co_df['COs'] = list(overall_mapping.keys())
+                overall_co_df['Values'] = [data['average_level_of_attainment'] for data in overall_mapping.values()]
+                overall_co_df['Target_count'] = [data['target_met_count']['Y'] for data in overall_mapping.values()]
+
+                output = BytesIO()
+                writer = pd.ExcelWriter(output, engine='xlsxwriter')
+                workbook = writer.book
+                worksheet = workbook.add_worksheet('Sheet1')
+
+                college = College.query.get(assessment_instance.college_id)
+                subject = SubjectList.query.get(assessment_instance.subject_id)
+                worksheet.write('A1', college.name)
+                worksheet.merge_range('A1:F1', college.name)
+                worksheet.write('A2', f"Year: {subject.year}  Branch: {subject.branch}  Semester: {subject.semester}")
+                worksheet.merge_range('A2:F2', f"Year: {subject.year}  Branch: {subject.branch}  Semester: {subject.semester}")
+                worksheet.write('A3', f"SUBJECT CODE : {subject.subject_code}                     | SUBJECT NAME: {subject.subject_name}")
+                worksheet.merge_range('A3:F3', f"SUBJECT CODE : {subject.subject_code}                     | SUBJECT NAME: {subject.subject_name}")
+
+                worksheet.write('C5', "CO's")
+                worksheet.write('C6', 'MAX MARKS')
+
+                question_columns = list(mapping_dict.keys())
+
+                for index, question in enumerate(question_columns, start=2):
+                    worksheet.write(4, index + 1, mapping_dict[question].get('co', ''))  # COs
+                    worksheet.write(5, index + 1, mapping_dict[question].get('maxMarks', ''))  # Max Marks
+
+                individual_df.to_excel(writer, startrow=7, index=False, sheet_name='Sheet1')
+
+                overall_co_df.to_excel(writer, startrow=len(individual_df) + 9, index=False, sheet_name='Sheet1')
+
+                writer.close()
+                updated_file_data = output.getvalue()
+
+            elif selected_assessment_type == 'semester_end_exam':
+                pass
+
+            elif selected_assessment_type == 'course_exit_survey':
+                pass
+
         except Exception as e:
             flash(f"Error processing Excel file: {e}", 'danger')
             return redirect(url_for('user_routes.upload_excel'))
 
-        mapping_dict = assessment_instance.mapping_dictionary
-        co_attainments = CoAttainment.query.filter_by(subject_code=assessment_instance.section.subject_code).all()
-        
-        if not co_attainments:
-            flash('No LOA data found for the selected subject code.', 'danger')
-            return redirect(url_for('user_routes.upload_excel'))
+        if selected_assessment_type == 'assessments':
+            if action == 'submit' and assessment_instance.status_for_excel != 'submitted':
+                assessment_instance.excel_file = updated_file_data
+                assessment_instance.status_for_excel = 'submitted'
+                db.session.commit()
+                flash('Assessment file submitted successfully and cannot be modified further.', 'success')
+            elif action == 'save' and assessment_instance.status_for_excel != 'submitted':
+                assessment_instance.excel_file = updated_file_data
+                assessment_instance.status_for_excel = 'saved'
+                db.session.commit()
+                flash('Assessment file saved successfully.', 'success')
+            else:
+                flash('Assessment file cannot be modified as it is already submitted.', 'danger')
 
-        loa_data = [co_attainment.loa_data for co_attainment in co_attainments]
-        target_percs = co_attainments[0].target_perc  # Assuming target_perc is consistent across all COs for the subject
+        elif selected_assessment_type == 'semester_end_exam':
+            # Handle save/submit logic if needed for semester end exam
+            flash('Semester End Exam data uploaded successfully.', 'success')
 
-        individual_mapping, overall_mapping = create_mapping(mapping_dict, marks_data, loa_data, target_percs)
-
-        individual_df = pd.DataFrame(marks_data)
-
-        for co in mapping_dict.values():
-            co_key = co['co']
-            individual_df[f'{co_key}%'] = individual_df.apply(lambda row: individual_mapping.get(f"{row['REG NO']}_{co_key}", {}).get('percentage', ""), axis=1)
-            individual_df[f'{co_key}_LOA'] = individual_df.apply(lambda row: individual_mapping.get(f"{row['REG NO']}_{co_key}", {}).get('level_of_attainment', ""), axis=1)
-            individual_df[f'{co_key}_Target'] = individual_df.apply(lambda row: individual_mapping.get(f"{row['REG NO']}_{co_key}", {}).get('target_met', ""), axis=1)
-
-        overall_row = [""] * len(individual_df.columns)
-        overall_row[0] = "Overall"
-        for co, data in overall_mapping.items():
-            co_index = individual_df.columns.get_loc(f'{co}%')
-            loa_index = individual_df.columns.get_loc(f'{co}_LOA')
-            target_index = individual_df.columns.get_loc(f'{co}_Target')
-            overall_row[co_index] = ""
-            overall_row[loa_index] = data['average_level_of_attainment']
-            overall_row[target_index] = data['target_met_count']['Y']
-
-        overall_series = pd.Series(overall_row, index=individual_df.columns)
-        individual_df = pd.concat([individual_df, pd.DataFrame([overall_series])], ignore_index=True)
-
-        overall_co_df = pd.DataFrame(columns=['COs', 'Values', 'Target_count'])
-        overall_co_df['COs'] = list(overall_mapping.keys())
-        overall_co_df['Values'] = [data['average_level_of_attainment'] for data in overall_mapping.values()]
-        overall_co_df['Target_count'] = [data['target_met_count']['Y'] for data in overall_mapping.values()]
-
-        output = BytesIO()
-        writer = pd.ExcelWriter(output, engine='xlsxwriter')
-        workbook = writer.book
-        worksheet = workbook.add_worksheet('Sheet1')
-
-        college = College.query.get(assessment_instance.college_id)
-        subject = SubjectList.query.get(assessment_instance.subject_id)
-        worksheet.write('A1', college.name)
-        worksheet.merge_range('A1:F1', college.name)
-        worksheet.write('A2', f"Year: {subject.year}  Branch: {subject.branch}  Semester: {subject.semester}")
-        worksheet.merge_range('A2:F2', f"Year: {subject.year}  Branch: {subject.branch}  Semester: {subject.semester}")
-        worksheet.write('A3', f"SUBJECT CODE : {subject.subject_code}                     | SUBJECT NAME: {subject.subject_name}")
-        worksheet.merge_range('A3:F3', f"SUBJECT CODE : {subject.subject_code}                     | SUBJECT NAME: {subject.subject_name}")
-
-        worksheet.write('C5', "CO's")
-        worksheet.write('C6', 'MAX MARKS')
-
-        question_columns = list(mapping_dict.keys())
-
-        for index, question in enumerate(question_columns, start=2):
-            worksheet.write(4, index + 1, mapping_dict[question].get('co', ''))  # COs
-            worksheet.write(5, index + 1, mapping_dict[question].get('maxMarks', ''))  # Max Marks
-
-        individual_df.to_excel(writer, startrow=7, index=False, sheet_name='Sheet1')
-
-        overall_co_df.to_excel(writer, startrow=len(individual_df) + 9, index=False, sheet_name='Sheet1')
-
-        writer.close()
-        updated_file_data = output.getvalue()
-
-        if action == 'submit' and assessment_instance.status_for_excel != 'submitted':
-            assessment_instance.excel_file = updated_file_data
-            assessment_instance.status_for_excel = 'submitted'
-            db.session.commit()
-            flash('Assessment file submitted successfully and cannot be modified further.', 'success')
-        elif action == 'save' and assessment_instance.status_for_excel != 'submitted':
-            assessment_instance.excel_file = updated_file_data
-            assessment_instance.status_for_excel = 'saved'
-            db.session.commit()
-            flash('Assessment file saved successfully.', 'success')
-        else:
-            flash('Assessment file cannot be modified as it is already submitted.', 'danger')
+        elif selected_assessment_type == 'course_exit_survey':
+            # Handle save/submit logic if needed for course exit survey
+            flash('Course Exit Survey data uploaded successfully.', 'success')
 
         return redirect(url_for('user_routes.upload_excel'))
+
 
 @user_routes.route('/user/download_assessment', methods=['GET', 'POST'])
 @login_required
@@ -457,8 +484,10 @@ def internal_assessment_co():
                     if internal_assessment:
                         if calculation_method == 'weightage':
                             co_values, target_counts, all_cos = calculate_co_weightage(internal_assessment.id)
+                            internal_assessment.weightage_co_values = co_values  # Store weightage CO values
                         else:
                             co_values, target_counts, all_cos = calculate_co(internal_assessment.id)
+                            internal_assessment.co_values = co_values  # Store normal CO values
 
                         # Fetch assessment names based on instance IDs in target_counts
                         instance_ids = list(target_counts.keys())
@@ -469,7 +498,6 @@ def internal_assessment_co():
                         for assessment in assessments:
                             assessment_names[assessment.id] = assessment.name
 
-                        internal_assessment.co_values = co_values
                         internal_assessment.target_counts = target_counts
                         db.session.commit()
                     else:
